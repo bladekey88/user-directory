@@ -1,0 +1,8 @@
+#Ignore Media Directories
+images/
+uploads/
+vendor/
+
+*.phpx
+*composer.lock
+*composer.json
