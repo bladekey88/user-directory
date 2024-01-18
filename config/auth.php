@@ -1,5 +1,10 @@
 <?php
 // auth.php
+// This script is required on all pages where an authenticated user is required.
+
+@require(__DIR__ . "/functions.php");
+@define("LOGIN_URL", WEBROOT . "/login.php");
+@$header = "HTTP/1.1 401 Unauthorized";
 
 // Start the session
 session_start();
@@ -7,14 +12,12 @@ session_start();
 // Check if the user is not authenticated
 if (!isset($_SESSION['userid']) || empty($_SESSION['userid'])) {
     // Redirect to the login page
-    header("Location: /directory/login.php");
-    exit();
+    redirect(LOGIN_URL, $header);
 }
 
 if ($_SESSION["login_method"] == "CLIENT_CERTIFICATE" && $_SESSION["username"] != $_SERVER["SSL_CLIENT_S_DN_CN"]) {
     session_destroy();
-    header("HTTP/1.1 401 Unauthorized");
-    header("Location: /directory/login.php");
+    redirect(LOGIN_URL, $header);
 }
 
 if (!isset($_SESSION["role"])) : ?>

@@ -1,6 +1,5 @@
 <?php
-@require_once($_SERVER["DOCUMENT_ROOT"] . "/directory/assets/config/functions.php");
-@require_once($_SERVER["DOCUMENT_ROOT"] . "/directory/assets/config/auth.php");
+@require_once(dirname(__DIR__, 1) . "/config/auth.php");
 
 function handle_error($error, $status = "400 Bad Request")
 {

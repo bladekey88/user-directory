@@ -1,7 +1,8 @@
 <?php
+require(__DIR__ . "/config/auth.php");
 $title = "Add New User";
 
-require_once("header.php");
+require_once(FILEROOT . "/header.php");
 ?>
 
 <style>
@@ -38,7 +39,7 @@ require_once("header.php");
                 <noscript>
                     <span class="fw-lighter text-danger">* indcates required field</span>
                 </noscript>
-                <form action="process-user.php" method="post" class="form" id="add-user" name="add-user" novalidate>
+                <form action="<?php echo WEBROOT; ?>/process-user.php" method="post" class="form" id="add-user" name="add-user" novalidate>
                     <fieldset class="d-flex gap-5 mb-2 p-3 border  rounded-1 align-items-center flex-wrap">
                         <div class="form-element flex-grow-1">
                             <label class="form-label helper" for="firstname">First Name</label>
@@ -209,7 +210,7 @@ require_once("header.php");
                 //Submit the form via FetchAPI
                 try {
                     const formData = new FormData(addUserForm);
-                    const response = await fetch('process-user.php', {
+                    const response = await fetch('<?php echo WEBROOT; ?>/process-user.php', {
                         method: 'POST',
                         body: formData,
                     });
@@ -226,7 +227,7 @@ require_once("header.php");
                         formErrors.className = '';
                         formErrors.className = "alert alert-success m-1 p-0 rounded-0 border border-success";
                         formErrors.insertAdjacentHTML("afterbegin", "<h6 class='fw-bolder rounded-0 m-2 p-1'>Processing Complete - User Created</h6>")
-                        formErrorList.insertAdjacentHTML("afterbegin", `<li class='pb-1 ms-3'><a href="/directory/profile.php?user=${usernameField.value}">View User</a></li>`);
+                        formErrorList.insertAdjacentHTML("afterbegin", `<li class='pb-1 ms-3'><a href="<?php echo WEBROOT; ?>/profile.php?user=${usernameField.value}">View User</a></li>`);
                     } else {
                         // Handle server error
                         if (response.status === 400) {
@@ -259,4 +260,4 @@ require_once("header.php");
 </script>
 
 
-<?php require_once("footer.php"); ?>
+<?php require_once(FILEROOT . "/footer.php"); ?>

@@ -1,9 +1,7 @@
 <?php
 
 // Set page title and import the header
-@session_start();
-require_once("assets/config/functions.php");
-@require_once("./assets/config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
 
 // Profile page checks
 if (isset($_GET["user"])) {
@@ -12,7 +10,7 @@ if (isset($_GET["user"])) {
     $username = $_SESSION["username"];
 }
 
-//Global  Permission and Role Check
+//Global Permission and Role Check
 if (!check_user_permission(PERMISSION_VIEW_USER)) {
     @require_once($_SERVER['DOCUMENT_ROOT'] . "/errordocs/403.php");
     exit();
@@ -20,8 +18,7 @@ if (!check_user_permission(PERMISSION_VIEW_USER)) {
 
 if ($username != $_SESSION["username"]) {
     if (!check_user_permission(PERMISSION_VIEW_ALL_USERS)) {
-        header("Location:profile.php");
-        exit();
+        redirect("/profile.php", "HTTP/1.1 404 Not Found");
     }
 }
 
@@ -43,7 +40,6 @@ if ($row) {
     }
 
     if (!$row["path"]) {
-        // $profile_image = "https://bootdey.com/img/Content/avatar/avatar1.png";
         $profile_image = "assets/img/user-default.png";
     } else {
         $profile_image = $row["path"];
@@ -81,7 +77,7 @@ if (mysqli_num_rows($user_role) > 0) {
 
 // Start the html
 $title =  $row["firstname"] . " " . $row["lastname"] . " - Profile Page";
-require_once("header.php");
+require_once(FILEROOT . "/header.php");
 
 ?>
 <style>
@@ -90,7 +86,8 @@ require_once("header.php");
     }
 
     .img-account-profile {
-        height: 15rem;
+        height: 50%;
+        width: 50%;
     }
 
     .rounded-circle {
@@ -116,8 +113,6 @@ require_once("header.php");
         background-color: rgba(33, 40, 50, 0.03);
         border-bottom: 1px solid rgba(33, 40, 50, 0.125);
     }
-
-
 
     .card-header {
         max-height: 3.55rem;
@@ -172,7 +167,7 @@ require_once("header.php");
                             <i class="bi bi-info-circle pe-2"></i>
                             Administrators can unlock the account directly using the ' Unlock Account' button, or IT Services can reset the account.
                         </p>
-                        <a id="btnunlockaccount" role="button" class="btn shadow btn-primary border-dark border-1 mb-1 rounded-0" href="/directory/change-account-status.php?action=unlock&user=<?php echo $username; ?>">
+                        <a id="btnunlockaccount" role="button" class="btn shadow btn-primary border-dark border-1 mb-1 rounded-0" href="<?php echo WEBROOT; ?>/change-account-status.php?action=unlock&user=<?php echo $username; ?>">
                             <i class="bi bi-unlock"></i>
                             Unlock Account
                         </a>
@@ -252,10 +247,10 @@ require_once("header.php");
                                 <p class="my-0">Account Details</p>
                                 <div class="account-buttons" id="account-buttons">
                                     <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"]) || check_user_permission(PERMISSION_EDIT_ANY_PROFILE)) : ?>
-                                        <a role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0" data-enabled="false" id="btneditprofile" href="edit-profile.php?user=<?php echo $row["username"]; ?>">Edit Profile</a>
+                                        <a role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0" data-enabled="false" id="btneditprofile" href="<?php echo WEBROOT . "/edit-profile.php?user=" . $row["username"]; ?>">Edit Profile</a>
                                     <?php endif; ?>
                                     <?php if (check_user_permission(PERMISSION_LOCK_USER) && $row["locked"] == 0) : ?>
-                                        <a role="button" id="btnlockaccount" class="btn btn-sm btn-outline-danger border-2 rounded-0 <?php echo $hidden; ?>" href="/directory/change-account-status.php?action=lock&user=<?php echo $username; ?>">
+                                        <a role="button" id="btnlockaccount" class="btn btn-sm btn-outline-danger border-2 rounded-0 <?php echo $hidden; ?>" href="<?php echo WEBROOT . "/change-account-status.php?action=lock&user=$username"; ?>">
                                             <i class="bi bi-lock"></i>Lock Account
                                         </a>
                                     <?php endif; ?>
@@ -437,7 +432,6 @@ require_once("header.php");
                                 <div id="account-certificates" class="card-body ms-4">
                                     <h6>Enrol Certificate</h6>
                                     <button id="enrol-certificate" type="button" class="btn btn-primary rounded-0 btn-sm">Enrol Current Certificate</button>
-                                    <button type="button" class="btn btn-primary rounded-0 btn-sm disabled">Upload Certificate File</button>
                                     <div id="certificate-error"></div>
 
                                     <?php
@@ -531,7 +525,7 @@ require_once("header.php");
             e.preventDefault();
 
             try {
-                const response = await fetch(`change-account-status.php?action=${encodeURIComponent(action)}&user=<?php echo urlencode($username); ?>`);
+                const response = await fetch(`<?php echo WEBROOT; ?>/change-account-status.php?action=${encodeURIComponent(action)}&user=<?php echo urlencode($username); ?>`);
                 //Handle incorrect params and permission/authorisation errors 
                 if (!response.ok) {
                     let errorMessage;
@@ -578,7 +572,7 @@ require_once("header.php");
 
             const formData = new FormData(form);
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'upload-profile-picture.php');
+            xhr.open('POST', '<?php echo WEBROOT; ?>/upload-profile-picture.php');
 
             xhr.onload = () => {
                 const response = JSON.parse(xhr.responseText);
@@ -751,7 +745,7 @@ require_once("header.php");
 
         async function updateDatabase(userid, fieldName, fieldValue) {
             try {
-                const response = await fetch('update-user.php', {
+                const response = await fetch('<?php echo WEBROOT; ?>/update-user.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -783,7 +777,7 @@ require_once("header.php");
 
         async function updateDatabase(userid, fieldName, fieldValue) {
             try {
-                const response = await fetch('auth/check-certificate.php', {
+                const response = await fetch('<?php echo WEBROOT; ?>/auth/check-certificate.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -819,6 +813,8 @@ require_once("header.php");
     toggleEditMode();
     changeAccountStatus('lock');
     changeAccountStatus('unlock');
-    updateCertificate();
+    <?php if ($_SESSION["username"] == $username) : ?>
+        updateCertificate();
+    <?php endif; ?>
 </script>
-<?php require_once("footer.php"); ?>
+<?php require_once(FILEROOT . "/footer.php"); ?>

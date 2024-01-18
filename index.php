@@ -1,11 +1,13 @@
 <?php
-
+require_once(__DIR__ . "/config/auth.php");
 $title = "Home Page";
-require_once("header.php");
+$datatable_needed = true;
 
 if (!check_user_permission(PERMISSION_VIEW_ALL_USERS)) {
-    require_once("profile.php");
+    require_once(FILEROOT . "/profile.php");
     exit();
+} else {
+    require_once(FILEROOT . "/header.php");
 }
 
 // Get all Users
@@ -46,7 +48,7 @@ $users = run_sql(get_all_users());
                             <td><?php echo $user["year"]; ?></td>
                             <td><?php echo $user["last_updated"]; ?></td>
                             <td class="pe-auto">
-                                <a href="profile.php?user=<?php echo $user["username"]; ?>">
+                                <a href="<?php echo WEBROOT; ?>/profile.php?user=<?php echo $user["username"]; ?>">
                                     <span class="badge text-bg-info">View User</span>
                                 </a>
                                 <?php if ($user["locked"]) : ?>
@@ -67,6 +69,7 @@ $users = run_sql(get_all_users());
     $(".container").css("display", "none");
     $(window).on("load", function() {
         new DataTable('#users', {
+            stateSave: true,
             responsive: true,
             order: [
                 [6, 'desc'],
@@ -91,7 +94,7 @@ $users = run_sql(get_all_users());
             }
 
             if (clickedElement && clickedElement.tagName === 'TR') {
-                const url = "profile.php?user=" + clickedElement.dataset.user;
+                const url = "<?php echo WEBROOT; ?>/profile.php?user=" + clickedElement.dataset.user;
                 window.location.href = url;
             }
         })

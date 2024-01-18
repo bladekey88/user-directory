@@ -1,6 +1,5 @@
 <?php
-@require_once("./assets/config/auth.php");
-@require_once("./assets/config/functions.php");
+require_once(__DIR__ . "/config/auth.php");
 
 if (!isset($title)) {
     $title = "Hogwarts Directory";
@@ -21,11 +20,12 @@ if (!isset($title)) {
     <link rel="stylesheet preload prefetch" as="style" crossorigin href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-1.13.8/fh-3.4.0/r-2.5.0/datatables.min.css" rel="stylesheet">
-
+    <?php if (isset($datatable_needed) && $datatable_needed) : ?>
+        <link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-1.13.8/fh-3.4.0/r-2.5.0/datatables.min.css" rel="stylesheet">
+    <?php endif; ?>
 
     <!-- Custom Css to override any bootstrap we don't want -->
-    <link rel=" stylesheet" href="assets/css/table.css">
+    <link rel=" stylesheet" href="<?php echo WEBROOT . "/"; ?>assets/css/table.css">
 
     <style>
         * {
@@ -102,7 +102,7 @@ if (!isset($title)) {
                                 </a>
                             </li>
                             <li>
-                                <a href="/directory/profile.php" class="nav-link text-white">
+                                <a href="<?php echo WEBROOT; ?>/profile.php" class="nav-link text-white">
                                     <i class="bi bi-person-circle"></i>
                                     <p>
                                         <?php echo $_SESSION["name"]; ?>
@@ -112,7 +112,7 @@ if (!isset($title)) {
                             <li>
                                 <!-- <button type="button" role="link" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger"> -->
                                 <!-- <a role="button" href="/directory/logout.php" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger nav-link text-white nohover"> -->
-                                <a href="/directory/logout.php" class="btn btn-danger nohover border-2 rounded-0 mt-4 ms-3">
+                                <a href="<?php echo WEBROOT; ?>/logout.php" class="btn btn-danger nohover border-2 rounded-0 mt-4 ms-3">
                                     Logout
                                 </a>
                                 <!-- </button> -->

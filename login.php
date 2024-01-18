@@ -1,9 +1,8 @@
 <?php
-@require_once("assets/config/functions.php");
+require_once(__DIR__ . "/config/functions.php");
 session_start();
 if (isset($_SESSION["userid"])) {
-    header("Location:/directory");
-    exit();
+    redirect("/");
 }
 
 function executeQueryWithParams($conn, $sql, $params, $types)
@@ -32,7 +31,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
         if (password_verify($password, $row['password']) && strval($row["locked"]) == "0") {
             startSecureSession();
             storeUserInfoInSession($row);
-            redirectUser("index.php");
+            redirect("/");
         } else {
             return "Invalid username, password, or permissions configuration";
         }
@@ -56,7 +55,7 @@ function authenticateWithClientCertificate($conn, $username, $email)
     if ($row && strval($row["locked"]) == "0") {
         startSecureSession();
         storeUserInfoInSession($row);
-        redirectUser("index.php");
+        redirect("/");
     } else {
         return "<p>Certificate is not valid or cannot be used for login.</p>
         <p>Please choose another certificate, or use username and password to log in.</p>";
@@ -83,11 +82,6 @@ function storeUserInfoInSession($row)
     $_SESSION["login_method"] = isset($row['password']) ? "AUTHENTICATION" : "CLIENT_CERTIFICATE";
 }
 
-function redirectUser($location)
-{
-    header("Location: $location");
-    exit();
-}
 
 ########################################################
 ################ BEGIN LOGIN PROCESSING ################ 

@@ -181,7 +181,7 @@ function sanitise_user_input($input, $type = 'text')
             break;
             // Add more cases for additional types if needed
         case 'username':
-            $input = preg_replace('/[^a-zA-Z0-9.]/', '', $input);
+            $input = preg_replace('/[^a-zA-Z0-9.-]/', '', $input);
             break;
     }
     return $input;
@@ -276,4 +276,26 @@ function check_certificate_exists(string $serial)
     return False;
 }
 
-require_once("sql.php");
+function redirect(string $url, string $custom_header = null)
+{
+    // Always redirect using absolute path
+    $webroot_present = preg_match("#" . WEBROOT . "#", $url);
+    if (!$webroot_present) {
+        $url =  WEBROOT . "$url";
+    }
+    // If scheme is not provided, then can add it in
+    // Only expect http and https schemes (use # as delim)
+    $scheme_present = preg_match("#http(?:s)?://#i", $url);
+    if (!$scheme_present) {
+        $match_scheme = preg_match("#[a-z]+?://#i", WEBROOT, $scheme_from_url);
+        $new_url = $scheme_from_url[0] . $url;
+    } else {
+        $new_url = $url;
+    }
+    $custom_header !== null ?  header($custom_header) : null;
+    header("Location: $new_url");
+    exit();
+}
+
+
+require_once(FILEROOT . "/config/sql.php");

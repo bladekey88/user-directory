@@ -1,6 +1,5 @@
 <?php
-require_once("assets/config/functions.php");
-require_once("assets/config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
 
 
 function handle_error($error)
@@ -21,8 +20,7 @@ $direct = (isset($_SERVER["CONTENT_TYPE"]) && $_SERVER["CONTENT_TYPE"] == "appli
 //Permissions check
 if (!check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && !check_user_permission((PERMISSION_EDIT_ANY_PROFILE))) {
     header("HTTP/1.1 403 Forbidden");
-    header("Location:/directory");
-    exit();
+    redirect("/");
 }
 
 //Set up error array
@@ -47,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
         echo json_encode($response);
         exit();
-        header("Location:/directory/add-user.php");
+        header("Location:" . WEBROOT . "/add-user.php");
         exit();
     }
 

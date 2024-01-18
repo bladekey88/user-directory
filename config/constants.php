@@ -1,16 +1,27 @@
 <?php
+## TODO REMOVE CONSTANT VALUES NEEDED FOR PROD USE
+
+
+// Path Constants
+# Provide base URL e.g. www.example.com, or www.example.com/directory
+# Do not include the trailing slash, do include the protocol (e.g. http://, https://)
+define("WEBROOT", "https://www.hogwarts.wiz/directory");
+# This defines the root server directory locatin relative from where the constant file is
+# so that this file can be required/included at any level. The config folder is always
+# at the level below the root e.g root/config
+define("FILEROOT", dirname(__FILE__, 2));
+
 // Database Constants
 define('DB_HOST', 'localhost');
 define('DB_USER', 'moodle');
-define('DB_PW', 'GEDIb1diQIvo');
+define('DB_PW', 'GEDIb1diQIvo'); ##TODO REMOVE
 define('DB_DB', 'users');
 
-//Site constants
+// Site constants
 define("SCHOOL_HOUSES", ["GRYFFINDOR", "HUFFLEPUFF", "RAVENCLAW", "SLYTHERIN", "HOGWARTS", "NONE"]);
 define("SCHOOL_YEARS", ["FIRST YEAR", "SECOND YEAR", "THIRD YEAR", "FOURTH YEAR", "FIFTH YEAR", "SIXTH YEAR", "SEVENTH YEAR", "STAFF", "NONE"]);
 
-
-//LDAP Constants
+// LDAP Constants
 define("LDAP_HOST", DB_HOST);
 define("LDAP_VERSION", 3);
 define("LDAP_PORT", 389);

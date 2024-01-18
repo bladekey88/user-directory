@@ -1,6 +1,5 @@
 <?php
-require_once("assets/config/functions.php");
-require_once("assets/config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
 
 //Local Functions
 function user_exists($username, $email)
@@ -103,7 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Content-Type: application/json');
         echo json_encode($response);
         exit();
-        header("Location:/directory/add-user.php");
+        header("Location:" . WEBROOT . "add-user.php");
         exit();
     }
 
@@ -134,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Close the database connection
     $conn->close();
-    header("Location:/directory/profile.php?user=$username");
+    header("Location:" . WEBROOT . " /profile.php?user=$username");
 } else {
     // If the form is not submitted, redirect to the add_user page
     echo ("SOMETHING WENT WRONG");

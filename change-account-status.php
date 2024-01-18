@@ -1,7 +1,5 @@
 <?php
-
-require_once("./assets/config/functions.php");
-require_once("./assets/config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
 
 $messages = array();
 $errors = array();

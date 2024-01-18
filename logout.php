@@ -1,7 +1,5 @@
 <?php
-require_once("assets/config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
 
 session_destroy();
-header("HTTP/1.1 401 Unauthorized");
-header("location: /directory/login.php");
-exit();
+redirect(LOGIN_URL, $header);
