@@ -26,7 +26,7 @@ $direct = ($_SERVER["CONTENT_TYPE"] == "application/x-www-form-urlencoded") ? tr
 //Permissions check
 if (!check_user_permission(PERMISSION_ADD_USER)) {
     header("HTTP/1.1 403 Forbidden");
-    header("Location:/directory");
+    redirect("/");
     exit();
 }
 
@@ -133,7 +133,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Close the database connection
     $conn->close();
-    header("Location:" . WEBROOT . " /profile.php?user=$username");
+    redirect(WEBROOT . "/profile.php?user=$username");
+    // header("Location:" . WEBROOT . " /profile.php?user=$username");
 } else {
     // If the form is not submitted, redirect to the add_user page
     echo ("SOMETHING WENT WRONG");
