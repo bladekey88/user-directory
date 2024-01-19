@@ -21,7 +21,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
         FROM users t1
         LEFT JOIN user_role t2 ON t1.userid = t2.user_id
         LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-        WHERE username = ?";
+        WHERE username = ? and hidden is null";
     $params = [$username];
     $types = "s";
     $result = executeQueryWithParams($conn, $sql, $params, $types);
@@ -46,7 +46,7 @@ function authenticateWithClientCertificate($conn, $username, $email)
         FROM users t1
         LEFT JOIN user_role t2 ON t1.userid = t2.user_id
         LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-        WHERE username = ? AND email = ?";
+        WHERE username = ? AND email = ? and hidden is null";
     $params = [$username, $email];
     $types = "ss";
     $result = executeQueryWithParams($conn, $sql, $params, $types);
