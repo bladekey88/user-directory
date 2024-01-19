@@ -15,13 +15,14 @@ function get_all_users(int $hidden = null)
     return $sql;
 }
 
-function get_specific_user(string $username)
+function get_specific_user(string $username, $exclude_hidden = true)
 {
+    $exclude_hidden ? $hidden_stmt = "AND hidden IS NULL" : $hidden_stmt = null;
     $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,t1.idnumber,institution,country,city,locked,last_updated,t2.path
     FROM users t1
     LEFT JOIN user_profilepicture t2
     ON t1.idnumber = t2.idnumber
-    WHERE username = '$username';";
+    WHERE username = '$username' $hidden_stmt;";
     return $sql;
 }
 
