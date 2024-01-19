@@ -17,7 +17,9 @@ function handle_error($error, $status = "400 Bad Request")
 $error = array();
 
 //Permissions check
-if (!check_user_permission(PERMISSION_EDIT_OWN_PROFILE) || (isset($_SERVER["SSL_CLIENT_S_DN_CN"]) && $_SESSION["username"] <> $_SERVER["SSL_CLIENT_S_DN_CN"])) {
+if (isset($_POST["field"]) && $_POST["field"] == "enabled_by_user" && check_user_permission(PERMISSION_EDIT_OWN_PROFILE)) {
+    $update_mode = true;
+} else if (!check_user_permission(PERMISSION_EDIT_OWN_PROFILE) || (isset($_SERVER["SSL_CLIENT_S_DN_CN"]) && $_SESSION["username"] <> $_SERVER["SSL_CLIENT_S_DN_CN"])) {
     header("HTTP/1.1 403 Forbidden");
     array_push($error, "You do not have permission to continue enrolment - insufficient permissions or user mismatch");
     handle_error($error, "403 Forbidden");
@@ -25,6 +27,7 @@ if (!check_user_permission(PERMISSION_EDIT_OWN_PROFILE) || (isset($_SERVER["SSL_
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
     $valid_cert = validate_client_certificate();
     if (!$valid_cert["success"]) {
         array_push($error, validate_client_certificate()["reason"]);
@@ -49,11 +52,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $valid_from_formatted =  $valid_from->format('Y-m-d H:i:s');
     $valid_to = DateTime::createFromFormat('M d H:i:s Y T', $_SERVER["SSL_CLIENT_V_END"]);
     $valid_to_formatted =  $valid_to->format('Y-m-d H:i:s');
+    $field = isset($_POST["field"]) && $_POST["field"] != "null" ? sanitise_user_input($_POST["field"]) : null;
+    $value = isset($_POST["value"]) && $_POST["value"] != "null" ? sanitise_user_input($_POST["value"]) : null;
+    //Declare transaction type for the message
+    define("LANG_SQL_UPDATED", "updated");
+    define("LANG_SQL_ADDED", "added");
 
-
-    if (!check_certificate_exists($serial)) {
+    if (!is_null($field) && !is_null($value)) {
+        $sql = "UPDATE user_certificate 
+        SET $field = '$value'
+        WHERE user_id = '$userid';";
+        $transaction_type_message = LANG_SQL_UPDATED;
+    } else if (!check_certificate_exists($serial)) {
         $sql = "INSERT into user_certificate (user_id, certificate_serial, certificate_cn, certificate_email, certificate_client_issuer_dn, certificate_start, certificate_end)
     VALUES ('$userid', '$serial','$cn','$email','$issuer','$valid_from_formatted','$valid_to_formatted')";
+        $transaction_type_message = LANG_SQL_ADDED;
     } else {
         $sql = "UPDATE user_certificate 
         SET  certificate_serial = '$serial',
@@ -64,10 +77,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
          certificate_end = '$valid_to_formatted',
          enabled_by_user = '0'
          WHERE user_id = '$userid';";
+        $transaction_type_message = LANG_SQL_UPDATED;
     }
 
     if ($conn->query($sql) === TRUE) {
-        echo json_encode("Certificate added successfully");
+        echo json_encode("Certificate $transaction_type_message successfully. Please refresh the page to see the changes.<br>Certificates are automatically set to 'disabled'.");
     } else {
         echo json_encode("An error occurred" . $conn->error);
         // echo "Error: " . $sql . "<br>" . $conn->error;

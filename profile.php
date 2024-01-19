@@ -24,7 +24,7 @@ if ($username != $_SESSION["username"]) {
 
 // Get user details from database
 $user = run_sql(get_specific_user($username));
-$row = mysqli_fetch_assoc($user);  #Only expect one result so don't loop TODO//FUNCTION THIS
+$row = mysqli_fetch_assoc($user);  #Only expect one result so don't loop TODO //FUNCTION THIS
 if ($row) {
     // Handle Optional Fields (display only)
     if (strlen($row["middlename"]) == 0) {
@@ -140,6 +140,13 @@ require_once(FILEROOT . "/header.php");
 
     .styled-table th {
         width: 100%;
+    }
+
+    caption {
+        caption-side: top;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
     }
 </style>
 
@@ -438,6 +445,9 @@ require_once(FILEROOT . "/header.php");
                                     $cert_info = get_certificate_information();
                                     if ($cert_info) : ?>
                                         <table class="styled-table" id="certificate-table" name="certificate-table" style="width:100%;">
+                                            <caption>
+                                                Currently Enroled Certificate Details
+                                            </caption>
                                             <thead>
                                                 <tr>
                                                     <th>Attribute</th>
@@ -471,13 +481,16 @@ require_once(FILEROOT . "/header.php");
                                                 </tr>
                                                 <tr>
                                                     <th scope="row">Used for login</th>
-                                                    <td><?php echo ($cert_info["enabled_by_user"] == 1) ? "Enabled" : "Disabled"; ?></td>
+                                                    <td id="td-cert-status">
+                                                        <code class="fw-bolder">
+                                                            <?php echo ($cert_info["enabled_by_user"] == 1) ? "Enabled" : "Disabled"; ?></code>
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th scope="row">Options</th>
                                                     <td>
-                                                        <button class="mx-2 btn btn-sm btn-primary" type="button">Enable/Disable</button>
-                                                        <button class="mx-2 btn btn-sm btn-danger" type="button">Delete</button>
+                                                        <button id="toggleCertificateState" class="mx-2 btn btn-sm btn-primary" type="button"><?php echo ($cert_info["enabled_by_user"] == 1) ? "Disable" : "Enable"; ?></button>
+                                                        <button id="deleteCertificate" class="mx-2 btn btn-sm btn-danger" type="button">Delete</button>
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -768,21 +781,48 @@ require_once(FILEROOT . "/header.php");
     function updateCertificate() {
         const enrolCertificate = document.getElementById('enrol-certificate');
         let userid = <?php echo sanitise_user_input($_SESSION["userid"]); ?>;
-        let errorDiv = document.getElementById("certificate-error")
+        let errorDiv = document.getElementById("certificate-error");
 
-        enrolCertificate.addEventListener("click", (e) => {
+        <?php if (isset($cert_info["enabled_by_user"])) : ?>
+            var enableButton = document.getElementById("toggleCertificateState");
+            var tdCertStatus = document.getElementById("td-cert-status");
+            var certificateStatus = tdCertStatus.textContent.trim() === "Enabled" ? 1 : 0;
+            var new_status = certificateStatus === 0 ? "Enabled" : "Disabled";
+
+            enableButton.addEventListener("click", async (e) => {
+                try {
+                    if (certificateStatus === 0) {
+                        await updateDatabase(userid, "enabled_by_user", 1);
+                        new_status = "Enabled";
+                    } else {
+                        await updateDatabase(userid, "enabled_by_user", 0);
+                        new_status = "Disabled";
+                    }
+                    tdCertStatus.innerHTML = `<span class="p-0 fw-bold text-danger">${new_status}</span>`;
+                    enableButton.parentNode.removeChild(enableButton);
+                } catch (error) {
+                    console.error('Error:', error.message);
+                }
+            });
+        <?php endif; ?>
+
+        enrolCertificate.addEventListener("click", async e => {
             // Can only be done by user, no-one else (including admins)
-            updateDatabase(userid);
+            try {
+                await updateDatabase(userid);
+            } catch (error) {
+                console.error('Error:', error.message);
+            }
         });
 
-        async function updateDatabase(userid, fieldName, fieldValue) {
+        async function updateDatabase(userid, fieldName = null, fieldValue = null) {
             try {
                 const response = await fetch('<?php echo WEBROOT; ?>/auth/check-certificate.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `userid=${encodeURIComponent(userid)}`,
+                    body: `userid=${encodeURIComponent(userid)}&field=${encodeURIComponent(fieldName)}&value=${encodeURIComponent(fieldValue)}`,
                 });
 
                 if (!response.ok) {
@@ -792,21 +832,18 @@ require_once(FILEROOT . "/header.php");
                     errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-danger", "border", "border-danger");
                     errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Failed</h6><p class="mb-0 pb-0">${errorReturned}</p>`;
                     throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                if (response.ok) {
+                } else {
                     const result = await response.json();
-                    console.log(result);
                     errorDiv.className = '';
                     errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
                     errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Succeeded</h6><p class="mb-0 pb-0">${result}</p>`
                 }
             } catch (error) {
                 console.error('Error:', error.message);
+                throw error;
             }
         }
-
     }
-
 
     loadDynamicElements();
     uploadProfilePicture();

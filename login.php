@@ -1,3 +1,6 @@
+<!-- TODO Refactor SQL to standard SQL File -->
+<!-- TODO Refactor functions to either global function file or auth function file -->
+
 <?php
 require_once(__DIR__ . "/config/functions.php");
 session_start();
@@ -5,6 +8,9 @@ if (isset($_SESSION["userid"])) {
     redirect("/");
 }
 
+########################################################
+################ AUTH AND LOGIN FUNCTIONS ##############
+########################################################
 function executeQueryWithParams($conn, $sql, $params, $types)
 {
     $stmt = $conn->prepare($sql);
@@ -18,10 +24,10 @@ function executeQueryWithParams($conn, $sql, $params, $types)
 function authenticateWithUsernameAndPassword($conn, $username, $password)
 {
     $sql = "SELECT t1.userid, t1.username,t1.password, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden, t3.role_name
-        FROM users t1
-        LEFT JOIN user_role t2 ON t1.userid = t2.user_id
-        LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-        WHERE username = ? and hidden is null";
+    FROM users t1
+    LEFT JOIN user_role t2 ON t1.userid = t2.user_id
+    LEFT JOIN roles t3 ON t2.role_id = t3.role_id
+    WHERE username = ? and hidden is null";
     $params = [$username];
     $types = "s";
     $result = executeQueryWithParams($conn, $sql, $params, $types);
@@ -42,20 +48,32 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
 
 function authenticateWithClientCertificate($conn, $username, $email)
 {
-    $sql = "SELECT t1.userid, t1.username, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden, t3.role_name
-        FROM users t1
-        LEFT JOIN user_role t2 ON t1.userid = t2.user_id
-        LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-        WHERE username = ? AND email = ? and hidden is null";
+    $sql = "SELECT t1.userid, t1.username,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
+    FROM users t1
+    LEFT JOIN user_role t2 ON t1.userid = t2.user_id
+    LEFT JOIN roles t3 ON t2.role_id = t3.role_id
+    LEFT JOIN user_certificate t4 ON t1.userid = t4.user_id
+    WHERE username = ? AND email = ? AND hidden IS NULL";
     $params = [$username, $email];
     $types = "ss";
     $result = executeQueryWithParams($conn, $sql, $params, $types);
     $row = $result->fetch_assoc();
 
     if ($row && strval($row["locked"]) == "0") {
-        startSecureSession();
-        storeUserInfoInSession($row);
-        redirect("/");
+        # If there is a registered certificate
+        if ($row["certificate_serial"]) {
+            if (
+                $row["certificate_serial"] == $_SERVER['SSL_CLIENT_M_SERIAL'] &&
+                $row["certificate_cn"] == $_SERVER['SSL_CLIENT_S_DN_CN'] &&
+                $row["certificate_email"] == $_SERVER['SSL_CLIENT_S_DN_Email'] &&
+                $row["enabled_by_user"] == 1 &&
+                $row["certificate_end"] > date("Y-m-d H:i:s")
+            ) {
+                startSecureSession();
+                storeUserInfoInSession($row);
+                redirect("/");
+            }
+        }
     } else {
         return "<p>Certificate is not valid or cannot be used for login.</p>
         <p>Please choose another certificate, or use username and password to log in.</p>";
@@ -67,9 +85,7 @@ function startSecureSession()
     session_destroy();
     session_set_cookie_params(3600);
     session_start();
-
-    // Regenerate session ID to prevent session fixation attacks
-    session_regenerate_id(true);
+    session_regenerate_id(true);     // Regenerate session ID to prevent session fixation attacks
 }
 
 function storeUserInfoInSession($row)
@@ -82,11 +98,9 @@ function storeUserInfoInSession($row)
     $_SESSION["login_method"] = isset($row['password']) ? "AUTHENTICATION" : "CLIENT_CERTIFICATE";
 }
 
-
 ########################################################
 ################ BEGIN LOGIN PROCESSING ################ 
 ########################################################
-
 // Create connection
 @$conn = new mysqli(DB_HOST, DB_USER, DB_PW, DB_DB);
 if ($conn->connect_error) {
@@ -97,8 +111,8 @@ $password_error = null;
 $login_message  = null;
 $username = null;
 
-// First check for Standard Authentication (UN + PW)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // First check for Standard Authentication (UN + PW)
 
     // Validations
     $username = isset($_POST["username"]) ? sanitise_user_input($_POST["username"]) : null;
@@ -112,145 +126,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     // Or check for Certificate Authentication
 } elseif ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
-
-    $username = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_CN"]);
-    $email = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_Email"]);
-    $login_message = authenticateWithClientCertificate($conn, $username, $email);
+    $cert_validate = validate_client_certificate();
+    if ($cert_validate["success"]) {
+        $username = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_CN"]);
+        $email = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_Email"]);
+        $login_message = authenticateWithClientCertificate($conn, $username, $email);
+    } else {
+        $login_message = $cert_validate["reason"];
+    }
 }
 
 // Close the database connection
 $conn->close();
-
-
-// // Create connection
-// @$conn = new mysqli(DB_HOST, DB_USER, DB_PW, DB_DB);
-
-// // Check connection
-// if ($conn->connect_error) {
-//     die("Connection failed: " . $conn->connect_error);
-// }
-
-// // Initialize variables
-// $username = $password = "";
-// $usernameErr = $passwordErr = "";
-// $login_err = "";
-
-// // Check if the form is submitted
-// if ($_SERVER["REQUEST_METHOD"] == "POST") {
-//     // Validate username
-//     if (empty($_POST["username"])) {
-//         $usernameErr = "Username is required";
-//     } else {
-//         $username = sanitise_user_input($_POST["username"]);
-//     }
-
-//     // Validate password (when not using client access)
-//     if (empty($_POST["password"])) {
-//         $passwordErr = "Password is required";
-//     } else {
-//         $password = sanitise_user_input($_POST["password"]);
-//     }
-
-//     // If both username and password are provided, attempt login
-//     if (empty($usernameErr) && empty($passwordErr)) {
-//         // Retrieve hashed password from the database based on the provided username
-//         $sql = "SELECT t1.userid, t1.username, t1.commonname, t1.lastname,t1.idnumber, t1.locked, t1.hidden, t1.password, t3.role_name
-//         FROM users t1
-//         LEFT JOIN user_role t2 ON t1.userid = t2.user_id
-//         LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-//         WHERE username = ?";
-//         $stmt = $conn->prepare($sql);
-//         $stmt->bind_param("s", $username);
-//         $stmt->execute();
-//         $result = $stmt->get_result();
-//         $row = $result->fetch_assoc();
-
-//         if ($row) {
-//             // Verify the entered password with the hashed password from the database
-//             if (password_verify($password, $row['password']) && strval($row["locked"]) == "0") {
-//                 // Password is correct, login successful
-
-//                 // Start a secure session
-//                 session_destroy();
-//                 session_set_cookie_params(3600);
-//                 session_start();
-
-//                 // Regenerate session ID to prevent session fixation attacks
-//                 session_regenerate_id(true);
-
-//                 // Store user information in the session
-//                 $_SESSION['userid'] = $row['userid'];
-//                 $_SESSION['idnumber'] = $row['idnumber'];
-//                 $_SESSION['username'] = $row['username'];
-//                 $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
-//                 $_SESSION["role"] = $row["role_name"];
-//                 $_SESSION["login_method"] = "AUTHENTICATION";
-
-//                 header("Location: index.php"); // Redirect to a welcome page or dashboard
-//                 exit();
-//             } else {
-//                 // Password is incorrect
-//                 $login_err = "Invalid username, password, or permissions configuration";
-//             }
-//         } else {
-//             // User not found or role not set up
-//             $login_err = "Invalid username or password";
-//         }
-
-//         $stmt->close();
-//     }
-// }
-// // Client Cert Validation
-// elseif ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
-//     $username = $_SERVER["SSL_CLIENT_S_DN_CN"];
-//     $email = $_SERVER["SSL_CLIENT_S_DN_Email"];
-//     define("CLIENT_CERT", true);
-
-//     $sql = "SELECT t1.userid, t1.username, t1.commonname, t1.lastname,t1.idnumber, t1.locked, t1.hidden, t3.role_name
-//         FROM users t1
-//         LEFT JOIN user_role t2 ON t1.userid = t2.user_id
-//         LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-//         WHERE username = ? and email = ?";
-//     $stmt = $conn->prepare($sql);
-//     $stmt->bind_param("ss", $username, $email);
-//     $stmt->execute();
-//     $result = $stmt->get_result();
-//     $row = $result->fetch_assoc();
-
-//     if ($row && strval($row["locked"]) == "0") { // Start a secure session
-//         session_destroy();
-//         session_set_cookie_params(3600);
-//         session_start();
-
-//         // Regenerate session ID to prevent session fixation attacks
-//         session_regenerate_id(true);
-
-//         // Store user information in the session
-//         $_SESSION['userid'] = $row['userid'];
-//         $_SESSION['idnumber'] = $row['idnumber'];
-//         $_SESSION['username'] = $row['username'];
-//         $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
-//         $_SESSION["role"] = $row["role_name"];
-//         $_SESSION["login_method"] = "CLIENT_CERTIFICATE";
-
-//         header("Location: index.php"); // Redirect to a welcome page or dashboard
-//         exit();
-//     } else {
-//         // User not found or role not set up
-//         $login_err = "<p>Certificate is not valid or cannot be used for login.</p>
-//         <p>Please choose another certificate, or use username and password to log in.</p>";
-//     }
-
-//     $stmt->close();
-// }
-
-
-// // Close the database connection
-// $conn->close();
-// 
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
