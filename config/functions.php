@@ -165,6 +165,9 @@ function sanitise_user_input($input, $type = 'text')
             // Basic text input, allow alphanumeric characters, spaces, and common symbols
             $input = preg_replace('/[^a-zA-Z0-9\s!@#$%^&*()_+=\-,.?]/', '', $input);
             break;
+        case 'alpha':
+            $input =  preg_replace('/[^a-zA-Z]/', '', $input);
+            break;
         case 'email':
             // Validate and sanitize email address
             $input = filter_var($input, FILTER_SANITIZE_EMAIL);
@@ -172,7 +175,8 @@ function sanitise_user_input($input, $type = 'text')
             break;
         case 'numeric':
             // Allow only numeric characters
-            $input = preg_replace('/[^0-9]/', '', $input);
+            $input = filter_var($input, FILTER_SANITIZE_NUMBER_INT);
+            $input = filter_var($input, FILTER_VALIDATE_INT);
             break;
         case 'url':
             // Validate and sanitize URL

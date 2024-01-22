@@ -645,6 +645,7 @@ require_once(FILEROOT . "/header.php");
         }
 
         function disableEditMode() {
+            const updateStatusBadges = document.querySelectorAll("span.update-status");
             editButton.textContent = "Edit Profile";
             editButton.classList.replace("btn-primary", "btn-outline-primary");
             editButton.dataset.enabled = "false";
@@ -652,6 +653,13 @@ require_once(FILEROOT . "/header.php");
             navigationTabs.forEach((tab) => {
                 tab.removeAttribute("disabled");
             });
+
+            //Remove any status badges due to DB operations
+            updateStatusBadges.forEach(badge => {
+                if (badge) {
+                    badge.remove();
+                }
+            })
 
             nonEditableFields.forEach((field) => {
                 const indicatorBadge = field.previousElementSibling.querySelector(".badge.indicator");
@@ -741,7 +749,8 @@ require_once(FILEROOT . "/header.php");
         init();
     }
 
-    function updateField(field) {
+
+    async function updateField(field) {
         // Use this as a generic function to validate the data/field before send it to SQL
         // const profileElements = document.querySelectorAll("[contenteditable]");
         if (field.dataset.editable && field.contentEditable == "true") {
@@ -750,7 +759,22 @@ require_once(FILEROOT . "/header.php");
             if (newValue != oldValue) {
                 let fieldName = field.id.split("input")[1].toLowerCase();
                 let userid = <?php echo $row["userid"]; ?>;
-                updateDatabase(userid, fieldName, newValue);
+                let output = await updateDatabase(userid, fieldName, newValue);
+                const existingBadge = field.previousElementSibling;
+                if (existingBadge && existingBadge.classList.contains("badge", "output", "mx-1")) {
+                    existingBadge.remove();
+                }
+                if (output.result == "error") {
+                    const badgeError = document.createElement("span");
+                    badgeError.classList.add("badge", "update-status", "text-bg-danger", "output", "mx-1");
+                    badgeError.textContent = output.message;
+                    field.insertAdjacentElement("beforeBegin", badgeError);
+                } else if (output.result == "success") {
+                    const badgeSuccess = document.createElement("span");
+                    badgeSuccess.classList.add("badge", "update-status", "text-bg-success", "output", "mx-1");
+                    badgeSuccess.textContent = output.message;
+                    field.insertAdjacentElement("beforeBegin", badgeSuccess);
+                }
             }
         } else {
             return false;
@@ -765,15 +789,21 @@ require_once(FILEROOT . "/header.php");
                     },
                     body: `userid=${encodeURIComponent(userid)}&field=${encodeURIComponent(fieldName)}&value=${encodeURIComponent(fieldValue)}`,
                 });
-
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorText = await response.json();
+                    throw new Error(errorText.error);
+                } else {
+                    const result = await response.json();
+                    return {
+                        "result": "success",
+                        "message": result.success
+                    };
                 }
-
-                const result = await response.text();
-                console.log(result); // Handle the response from the server
             } catch (error) {
-                console.error('Error:', error.message);
+                return {
+                    "result": "error",
+                    "message": error
+                };
             }
         }
     }
