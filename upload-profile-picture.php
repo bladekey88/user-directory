@@ -1,6 +1,7 @@
 <?php
 // File handling logic
-require_once(__DIR__ . " /config/auth.php");
+require_once(__DIR__ . "/config/auth.php");
+
 
 if (!isset($_POST["idnumber"])) {
     echo "An ID Number is required to use this functionality.";
