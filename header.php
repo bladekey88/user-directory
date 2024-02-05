@@ -127,7 +127,7 @@ if (!isset($title)) {
                         <p class="mb-0">
                             You are presenting a valid certificate to this site, meaning that you will be automatically logged in.
                             If you wish to log in as another user or force a logout, you need to remove this certificate. This is controlled by your browser
-                            so consult your browser settings for further information.
+                            so consult your browser settings for further information. You can also disable certificate login from your <a class="link-offset-1" href="profile.php">profile page.</a>
                         </p>
                     </div>
                 </div>

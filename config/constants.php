@@ -5,7 +5,7 @@
 // Path Constants
 # Provide base URL e.g. www.example.com, or www.example.com/directory
 # Do not include the trailing slash, do include the protocol (e.g. http://, https://)
-define("WEBROOT", "https://www.hogwarts.wiz/directory");
+define("WEBROOT", "https://secure.hogwarts.wiz/directory");
 # This defines the root server directory locatin relative from where the constant file is
 # so that this file can be required/included at any level. The config folder is always
 # at the level below the root e.g root/config

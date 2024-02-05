@@ -144,9 +144,10 @@ require_once(FILEROOT . "/header.php");
 
     caption {
         caption-side: top;
-        text-align: center;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+        text-align: left;
+        font-weight: 500;
+        font-size: 1rem;
+        color: rgb(33, 37, 41);
     }
 </style>
 
@@ -431,23 +432,43 @@ require_once(FILEROOT . "/header.php");
                             </div>
                         </div>
 
-                        <?php if ($_SESSION["username"] == $row["username"]) : ?>
+                        <?php if ($_SESSION["username"] == $row["username"]) : $cert_info = get_certificate_information(); ?>
                             <div class="tab-pane fade show active" id="cert-info" role="tabpanel" aria-labelledby="cert-info-tab" tabindex="0">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <p class="my-0">Certificate Information</p>
                                 </div>
                                 <div id="account-certificates" class="card-body ms-4">
-                                    <h6>Enrol Certificate</h6>
-                                    <button id="enrol-certificate" type="button" class="btn btn-primary rounded-0 btn-sm">Enrol Current Certificate</button>
-                                    <div id="certificate-error"></div>
+                                    <div class="alert alert-info border-2 border-secondary rounded-0">
+                                        <h6 class="text-dark fw-bolder">Client Certificate Detected</h6>
+                                        <p class="">
+                                            A client certificate is being presented by the browser. This certificate may be able to be used for login.
+                                            Clicking the button will enrol the certificate and overwrite any certifiate details that were previously stored.
+                                            This will be the case even if the presented certificate information is identical to the stored certificate information.
+                                        </p>
+                                        <div class="bg-white p-3 border border-1 border-dark mb-1 pb-2 shadow text-dark">
+                                            <?php if ($cert_info && $cert_info["certificate_cn"] == $_SERVER["SSL_CLIENT_S_DN_CN"] && $cert_info["certificate_serial"] == $_SERVER["SSL_CLIENT_M_SERIAL"]) : ?>
+                                                <div class="alert alert-warning border border-2 border-danger py-1 text-dark rounded-1">
+                                                    <i class="bi bi-exclamation-circle fw-bold"></i>
+                                                    <span>Certificate appears to match stored information</span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <h6 class="fw-bolder">Certificate Details</h6>
+                                            <ul class="list-unstyled ms-3">
+                                                <li>Name: <?php echo $_SERVER["SSL_CLIENT_S_DN_CN"]; ?></li>
+                                                <li>Issued by: <?php echo $_SERVER["SSL_CLIENT_I_DN_CN"]; ?></li>
+                                                <li>Serial Number: <?php echo $_SERVER["SSL_CLIENT_M_SERIAL"]; ?></li>
+                                                <li> Valid from: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_START"])); ?></li>
+                                                <li>Valid to: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_END"])); ?></li>
+                                            </ul>
+                                            <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0">Enrol Detected Certificate</button>
+                                            <div id="certificate-error"></div>
+                                        </div>
+                                    </div>
 
                                     <?php
-                                    $cert_info = get_certificate_information();
                                     if ($cert_info) : ?>
                                         <table class="styled-table" id="certificate-table" name="certificate-table" style="width:100%;">
-                                            <caption>
-                                                Currently Enroled Certificate Details
-                                            </caption>
+                                            <caption>Enroled Certificate Details</caption>
                                             <thead>
                                                 <tr>
                                                     <th>Attribute</th>
@@ -482,7 +503,7 @@ require_once(FILEROOT . "/header.php");
                                                 <tr>
                                                     <th scope="row">Used for login</th>
                                                     <td id="td-cert-status">
-                                                        <code class="fw-bolder">
+                                                        <code class="fw-bolder text-capitalize">
                                                             <?php echo ($cert_info["enabled_by_user"] == 1) ? "Enabled" : "Disabled"; ?></code>
                                                     </td>
                                                 </tr>
@@ -491,6 +512,7 @@ require_once(FILEROOT . "/header.php");
                                                     <td>
                                                         <button id="toggleCertificateState" class="mx-2 btn btn-sm btn-primary" type="button"><?php echo ($cert_info["enabled_by_user"] == 1) ? "Disable" : "Enable"; ?></button>
                                                         <button id="deleteCertificate" class="mx-2 btn btn-sm btn-danger" type="button">Delete</button>
+                                                        <div id="certificate-status-change"></div>
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -812,26 +834,50 @@ require_once(FILEROOT . "/header.php");
         const enrolCertificate = document.getElementById('enrol-certificate');
         let userid = <?php echo sanitise_user_input($_SESSION["userid"]); ?>;
         let errorDiv = document.getElementById("certificate-error");
+        let certTable = document.getElementById("certificate-table");
 
         <?php if (isset($cert_info["enabled_by_user"])) : ?>
             var enableButton = document.getElementById("toggleCertificateState");
+            var deleteButton = document.getElementById("deleteCertificate");
             var tdCertStatus = document.getElementById("td-cert-status");
             var certificateStatus = tdCertStatus.textContent.trim() === "Enabled" ? 1 : 0;
             var new_status = certificateStatus === 0 ? "Enabled" : "Disabled";
+            let statusDiv = document.getElementById("certificate-status-change");
+
 
             enableButton.addEventListener("click", async (e) => {
                 try {
                     if (certificateStatus === 0) {
-                        await updateDatabase(userid, "enabled_by_user", 1);
+                        change_status = await updateDatabase(userid, "enabled_by_user", 1);
                         new_status = "Enabled";
                     } else {
-                        await updateDatabase(userid, "enabled_by_user", 0);
+                        change_status = await updateDatabase(userid, "enabled_by_user", 0);
                         new_status = "Disabled";
+                        <?php if ($_SESSION["login_method"] == "CLIENT_CERTIFICATE") : ?>
+                            window.location.href = "logout.php?certificate-disabled";
+                        <?php endif; ?>
                     }
+                    statusDiv.className = '';
+                    statusDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
+                    statusDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Update Succesful</h6><p class="mb-0 pb-0">Certificate information has been <span class="fw-bolder">${new_status}</span>.<br>${change_status}</p>`
                     tdCertStatus.innerHTML = `<span class="p-0 fw-bold text-danger">${new_status}</span>`;
                     enableButton.parentNode.removeChild(enableButton);
+                    deleteButton.parentNode.removeChild(deleteButton);
                 } catch (error) {
                     console.error('Error:', error.message);
+                }
+            });
+
+            deleteButton.addEventListener("click", async e => {
+                try {
+                    delete_certificate = await updateDatabase(userid, null, null, true);
+                    statusDiv.className = '';
+                    statusDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
+                    statusDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Deletion Succesful</h6><p class="mb-0 pb-0">Certificate has been <span class="fw-bolder">deleted</span>.<br>You must log in using your username and password.</p>`
+                    enableButton.parentNode.removeChild(enableButton);
+                    deleteButton.parentNode.removeChild(deleteButton);
+                } catch (error) {
+                    console.error('Error', error.message);
                 }
             });
         <?php endif; ?>
@@ -839,20 +885,26 @@ require_once(FILEROOT . "/header.php");
         enrolCertificate.addEventListener("click", async e => {
             // Can only be done by user, no-one else (including admins)
             try {
-                await updateDatabase(userid);
+                enrol_new_certificate = await updateDatabase(userid);
+                errorDiv.className = '';
+                errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
+                errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Successful</h6><p class="mb-0 pb-0">${enrol_new_certificate}</p>`;
+                if (certTable) {
+                    certTable.remove();
+                }
             } catch (error) {
                 console.error('Error:', error.message);
             }
         });
 
-        async function updateDatabase(userid, fieldName = null, fieldValue = null) {
+        async function updateDatabase(userid, fieldName = null, fieldValue = null, delete_certificate = null) {
             try {
                 const response = await fetch('<?php echo WEBROOT; ?>/auth/check-certificate.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `userid=${encodeURIComponent(userid)}&field=${encodeURIComponent(fieldName)}&value=${encodeURIComponent(fieldValue)}`,
+                    body: `userid=${encodeURIComponent(userid)}&field=${encodeURIComponent(fieldName)}&value=${encodeURIComponent(fieldValue)}&deletecertificate=${encodeURIComponent(delete_certificate)}`,
                 });
 
                 if (!response.ok) {
@@ -864,9 +916,7 @@ require_once(FILEROOT . "/header.php");
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 } else {
                     const result = await response.json();
-                    errorDiv.className = '';
-                    errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
-                    errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Succeeded</h6><p class="mb-0 pb-0">${result}</p>`
+                    return result;
                 }
             } catch (error) {
                 console.error('Error:', error.message);

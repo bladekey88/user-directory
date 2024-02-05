@@ -2,7 +2,14 @@
 require(__DIR__ . "/config/auth.php");
 $title = "Add New User";
 
+//Permissions check
+if (!check_user_permission(PERMISSION_ADD_USER)) {
+    // @header("HTTP/1.1 403 Forbidden");
+    redirect("/", "403 Forbidden");
+    exit();
+}
 require_once(FILEROOT . "/header.php");
+
 ?>
 
 <style>
