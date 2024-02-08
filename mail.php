@@ -19,7 +19,9 @@ try {
     $obBaseApp = new COM("hMailServer.Application", NULL, CP_UTF8);
     $obBaseApp->Connect();
 } catch (Exception $e) {
-    $error["dcom_permission"]  = "This problem is often caused by DCOM permissions not being set ($e)";
+    $error["dcom_permission"]  = "An error occured. This problem is often caused by DCOM permissions not being set ($e)";
+    echo "The email service is not reachable. This could be due to server or permissions issues.";
+    error_log($e, 0);
     exit();
 }
 
@@ -93,9 +95,12 @@ require_once(FILEROOT . "/header.php");
         cursor: auto;
     }
 </style>
-
 <main>
     <div class="container-xl px-4 mt-4">
+        <nav class="nav nav-borders">
+            <h4 class="m-0"><?php echo $_SESSION["name"]; ?></h4>
+        </nav>
+        <hr class="mt-0 mb-4">
         <div class="card">
             <div class="card-header text-bg-primary rounded-0">Email Account Details</div>
             <div class="card-body">
