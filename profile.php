@@ -257,9 +257,14 @@ require_once(FILEROOT . "/header.php");
                                     <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"]) || check_user_permission(PERMISSION_EDIT_ANY_PROFILE)) : ?>
                                         <a role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0" data-enabled="false" id="btneditprofile" href="<?php echo WEBROOT . "/edit-profile.php?user=" . $row["username"]; ?>">Edit Profile</a>
                                     <?php endif; ?>
+                                    <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"])) : ?>
+                                        <a role="button" id="btnViewEmail" class="btn btn-sm btn-outline-success border-2 rounded-0" href="<?php echo WEBROOT . "/mail.php"; ?>">
+                                            <i class="bi bi-envelope pe-1"></i>View Email Account Status
+                                        </a>
+                                    <?php endif; ?>
                                     <?php if (check_user_permission(PERMISSION_LOCK_USER) && $row["locked"] == 0) : ?>
                                         <a role="button" id="btnlockaccount" class="btn btn-sm btn-outline-danger border-2 rounded-0 <?php echo $hidden; ?>" href="<?php echo WEBROOT . "/change-account-status.php?action=lock&user=$username"; ?>">
-                                            <i class="bi bi-lock"></i>Lock Account
+                                            <i class="bi bi-lock pe-1"></i>Lock Account
                                         </a>
                                     <?php endif; ?>
                                 </div>
@@ -433,37 +438,45 @@ require_once(FILEROOT . "/header.php");
                         </div>
 
                         <?php if ($_SESSION["username"] == $row["username"]) : $cert_info = get_certificate_information(); ?>
+
                             <div class="tab-pane fade show active" id="cert-info" role="tabpanel" aria-labelledby="cert-info-tab" tabindex="0">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <p class="my-0">Certificate Information</p>
                                 </div>
                                 <div id="account-certificates" class="card-body ms-4">
-                                    <div class="alert alert-info border-2 border-secondary rounded-0">
-                                        <h6 class="text-dark fw-bolder">Client Certificate Detected</h6>
-                                        <p class="">
-                                            A client certificate is being presented by the browser. This certificate may be able to be used for login.
-                                            Clicking the button will enrol the certificate and overwrite any certifiate details that were previously stored.
-                                            This will be the case even if the presented certificate information is identical to the stored certificate information.
-                                        </p>
-                                        <div class="bg-white p-3 border border-1 border-dark mb-1 pb-2 shadow text-dark">
-                                            <?php if ($cert_info && $cert_info["certificate_cn"] == $_SERVER["SSL_CLIENT_S_DN_CN"] && $cert_info["certificate_serial"] == $_SERVER["SSL_CLIENT_M_SERIAL"]) : ?>
-                                                <div class="alert alert-warning border border-2 border-danger py-1 text-dark rounded-1">
-                                                    <i class="bi bi-exclamation-circle fw-bold"></i>
-                                                    <span>Certificate appears to match stored information</span>
-                                                </div>
-                                            <?php endif; ?>
-                                            <h6 class="fw-bolder">Certificate Details</h6>
-                                            <ul class="list-unstyled ms-3">
-                                                <li>Name: <?php echo $_SERVER["SSL_CLIENT_S_DN_CN"]; ?></li>
-                                                <li>Issued by: <?php echo $_SERVER["SSL_CLIENT_I_DN_CN"]; ?></li>
-                                                <li>Serial Number: <?php echo $_SERVER["SSL_CLIENT_M_SERIAL"]; ?></li>
-                                                <li> Valid from: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_START"])); ?></li>
-                                                <li>Valid to: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_END"])); ?></li>
-                                            </ul>
-                                            <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0">Enrol Detected Certificate</button>
-                                            <div id="certificate-error"></div>
+                                    <?php if (isset($_SERVER["SSL_CLIENT_S_DN_CN"])) : ?>
+                                        <div class="alert alert-info border-2 border-secondary rounded-0">
+                                            <h6 class="text-dark fw-bolder">Client Certificate Detected</h6>
+                                            <p class="">
+                                                A client certificate is being presented by the browser. This certificate may be able to be used for login.
+                                                Clicking the button will enrol the certificate and overwrite any certifiate details that were previously stored.
+                                                This will be the case even if the presented certificate information is identical to the stored certificate information.
+                                            </p>
+                                            <div class="bg-white p-3 border border-1 border-dark mb-1 pb-2 shadow text-dark">
+                                                <?php if ($cert_info && $cert_info["certificate_cn"] == $_SERVER["SSL_CLIENT_S_DN_CN"] && $cert_info["certificate_serial"] == $_SERVER["SSL_CLIENT_M_SERIAL"]) : ?>
+                                                    <div class="alert alert-warning border border-2 border-danger py-1 text-dark rounded-1">
+                                                        <i class="bi bi-exclamation-circle fw-bold"></i>
+                                                        <span>Certificate appears to match stored information</span>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <h6 class="fw-bolder">Certificate Details</h6>
+                                                <ul class="list-unstyled ms-3">
+                                                    <li>Name: <?php echo $_SERVER["SSL_CLIENT_S_DN_CN"]; ?></li>
+                                                    <li>Issued by: <?php echo $_SERVER["SSL_CLIENT_I_DN_CN"]; ?></li>
+                                                    <li>Serial Number: <?php echo $_SERVER["SSL_CLIENT_M_SERIAL"]; ?></li>
+                                                    <li> Valid from: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_START"])); ?></li>
+                                                    <li>Valid to: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_END"])); ?></li>
+                                                </ul>
+                                                <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0">Enrol Detected Certificate</button>
+                                                <div id="certificate-error"></div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    <?php else : ?>
+                                        <button id="enrol-certificate" type="button" class="mb-3 btn btn-primary rounded-0">
+                                            Enrol Certificate
+                                        </button>
+                                        <div id="certificate-error"></div>
+                                    <?php endif; ?>
 
                                     <?php
                                     if ($cert_info) : ?>

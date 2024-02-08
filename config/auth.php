@@ -7,6 +7,7 @@
 @$header = "HTTP/1.1 401 Unauthorized";
 
 // Start the session
+session_set_cookie_params(0, '/', '.hogwarts.wiz', true, false);
 session_start();
 
 // Check if the user is not authenticated

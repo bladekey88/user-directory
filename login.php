@@ -83,7 +83,7 @@ function authenticateWithClientCertificate($conn, $username, $email)
 function startSecureSession()
 {
     session_destroy();
-    session_set_cookie_params(3600);
+    session_set_cookie_params(3600, '/', '.hogwarts.wiz', true, true);
     session_start();
     session_regenerate_id(true);     // Regenerate session ID to prevent session fixation attacks
 }

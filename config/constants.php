@@ -14,8 +14,13 @@ define("FILEROOT", dirname(__FILE__, 2));
 // Database Constants
 define('DB_HOST', 'localhost');
 define('DB_USER', 'moodle');
-define('DB_PW', 'GEDIb1diQIvo'); ##TODO REMOVE
+define('DB_PW', 'GEDIb1diQIvo'); #TODO REMOVE FOR PRODUCTION
 define('DB_DB', 'users');
+
+// HMAIL Constants
+define("HMAIL_ADMIN_USER", "system@hogwarts.wiz");
+define("HMAIL_ADMIN_PW", "laptop"); #TODO REMOVE FOR PRODUCTION
+define("HMAIL_DOMAIN", "hogwarts.wiz");
 
 // Site constants
 define("SCHOOL_HOUSES", ["GRYFFINDOR", "HUFFLEPUFF", "RAVENCLAW", "SLYTHERIN", "HOGWARTS", "NONE"]);
