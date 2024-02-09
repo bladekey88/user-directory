@@ -154,7 +154,7 @@ require_once(FILEROOT . "/header.php");
 <main>
     <div class="container-xl px-4 mt-4">
         <noscript>
-            <div class="alert alert-warning border-danger text-danger rounded-0 p-0 py-1 ps-2 border-2">
+            <div class="alert alert-warning border-danger text-danger rounded-0 p-0 py-1 ps-2 border-2" role="alert">
                 <i class="pe-2 bi bi-exclamation-triangle"></i>
                 This page has limited functionality as Javascript is not enabled
             </div>
@@ -200,7 +200,7 @@ require_once(FILEROOT . "/header.php");
                         <!-- Profile picture upload button-->
                         <?php if (($username == $_SESSION["username"] && check_user_permission(PERMISSION_EDIT_OWN_PROFILE)) || (check_user_role(ROLE_ADMIN) && check_user_permission(PERMISSION_EDIT_ANY_PROFILE))) : ?>
                             <noscript>
-                                <div class="alert alert-warning border-danger border-2 m-0 p-0 rounded-0 ">
+                                <div class="alert alert-warning border-danger border-2 m-0 p-0 rounded-0 " role="alert">
                                     <p class="small p-0 m-0 ps-1">
                                         <span>Javascript required to change profile picture on this page.</span>
                                         <span> Your profile picture can be changed without needing Javascript on the Edit Profile page.</span>
@@ -245,7 +245,7 @@ require_once(FILEROOT . "/header.php");
                         <?php endif; ?>
                         <?php if ($_SESSION["username"] == $username) : ?>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="cert-info-tab" data-bs-toggle="tab" data-bs-target="#cert-info" type="button" role="tab" aria-controls="cert-info" aria-selected="false">Certificates</button>
+                                <button class="nav-link" id="certificates-tab" data-bs-toggle="tab" data-bs-target="#certificates" type="button" role="tab" aria-controls="certificates" aria-selected="false">Certificates</button>
                             </li>
                         <?php endif; ?>
                     </ul>
@@ -295,7 +295,6 @@ require_once(FILEROOT . "/header.php");
                                         <label class="small mb-1" for="inputCommonName">Preferred Name/Title</label>
                                         <p id="inputCommonName" data-editable="true" class="fw-bold"><?php echo $row["commonname"]; ?>
                                         </p>
-
                                     </div>
                                     <!-- Form Group (Middle)-->
                                     <div class="col-md-6">
@@ -439,14 +438,15 @@ require_once(FILEROOT . "/header.php");
 
                         <?php if ($_SESSION["username"] == $row["username"]) : $cert_info = get_certificate_information(); ?>
 
-                            <div class="tab-pane fade show active" id="cert-info" role="tabpanel" aria-labelledby="cert-info-tab" tabindex="0">
+                            <div class="tab-pane fade show active" id="certificates" role="tabpanel" aria-labelledby="certificates-tab" tabindex="0">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <p class="my-0">Certificate Information</p>
                                 </div>
                                 <div id="account-certificates" class="card-body ms-4">
                                     <?php if (isset($_SERVER["SSL_CLIENT_S_DN_CN"])) : ?>
-                                        <div class="alert alert-info border-2 border-secondary rounded-0">
+                                        <div class="alert alert-info border-2 border-secondary rounded-0 alert-dismissible fade show" role="alert">
                                             <h6 class="text-dark fw-bolder">Client Certificate Detected</h6>
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                             <p class="">
                                                 A client certificate is being presented by the browser. This certificate may be able to be used for login.
                                                 Clicking the button will enrol the certificate and overwrite any certifiate details that were previously stored.
@@ -454,7 +454,7 @@ require_once(FILEROOT . "/header.php");
                                             </p>
                                             <div class="bg-white p-3 border border-1 border-dark mb-1 pb-2 shadow text-dark">
                                                 <?php if ($cert_info && $cert_info["certificate_cn"] == $_SERVER["SSL_CLIENT_S_DN_CN"] && $cert_info["certificate_serial"] == $_SERVER["SSL_CLIENT_M_SERIAL"]) : ?>
-                                                    <div class="alert alert-warning border border-2 border-danger py-1 text-dark rounded-1">
+                                                    <div class="alert alert-warning border border-2 border-danger py-1 text-dark rounded-1" role="alert">
                                                         <i class="bi bi-exclamation-circle fw-bold"></i>
                                                         <span>Certificate appears to match stored information</span>
                                                     </div>
@@ -467,7 +467,16 @@ require_once(FILEROOT . "/header.php");
                                                     <li> Valid from: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_START"])); ?></li>
                                                     <li>Valid to: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_END"])); ?></li>
                                                 </ul>
-                                                <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0">Enrol Detected Certificate</button>
+                                                <div class="d-flex gap-2">
+                                                    <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0 disabled">
+                                                        Enrol Detected Certificate
+                                                    </button>
+                                                    <noscript>
+                                                        <div class="alert alert-warning border-danger text-danger rounded-0 p-3 py-2 ps-2 border-3" role="alert">
+                                                            Functionality disabled as javascript is required
+                                                        </div>
+                                                    </noscript>
+                                                </div>
                                                 <div id="certificate-error"></div>
                                             </div>
                                         </div>
@@ -480,7 +489,7 @@ require_once(FILEROOT . "/header.php");
 
                                     <?php
                                     if ($cert_info) : ?>
-                                        <table class="styled-table" id="certificate-table" name="certificate-table" style="width:100%;">
+                                        <table class="styled-table" id="certificate-table" name="certificate-table" style="width:100%; margin-top: 0;">
                                             <caption>Enroled Certificate Details</caption>
                                             <thead>
                                                 <tr>
@@ -523,8 +532,13 @@ require_once(FILEROOT . "/header.php");
                                                 <tr>
                                                     <th scope="row">Options</th>
                                                     <td>
-                                                        <button id="toggleCertificateState" class="mx-2 btn btn-sm btn-primary" type="button"><?php echo ($cert_info["enabled_by_user"] == 1) ? "Disable" : "Enable"; ?></button>
-                                                        <button id="deleteCertificate" class="mx-2 btn btn-sm btn-danger" type="button">Delete</button>
+                                                        <noscript>
+                                                            <div class="alert alert-warning border-danger text-danger rounded-0 p-0 py-1 ps-2 border-2" role="alert">
+                                                                Functionality disabled as javascript is required
+                                                            </div>
+                                                        </noscript>
+                                                        <button id="toggleCertificateState" disabled="disabled" class="disabled mx-2 btn btn-sm btn-primary" type="button"><?php echo ($cert_info["enabled_by_user"] == 1) ? "Disable" : "Enable"; ?></button>
+                                                        <button id="deleteCertificate" disabled="disabled" class="disabled mx-2 btn btn-sm btn-danger" type="button">Delete</button>
                                                         <div id="certificate-status-change"></div>
                                                     </td>
                                                 </tr>
@@ -550,13 +564,35 @@ require_once(FILEROOT . "/header.php");
         window.onload = function() {
             let profilePictureForm = document.getElementById('profilePictureForm');
             let tabProfileTab = document.getElementById('tabProfile');
+            let tabId = window.location.hash.substring(1);
+
             profilePictureForm && profilePictureForm.classList.remove("d-none");
             tabProfileTab && tabProfileTab.classList.remove("d-none");
-            //Get each tab-pane class and remove show class
+
+            // Enable Buttons that require JS to work (i.e. no fallback)
+            let enrolCertificateButton = document.getElementById("enrol-certificate");
+            let toggleCertificateStateButton = document.getElementById("toggleCertificateState");
+            let deleteCertificateButton = document.getElementById("deleteCertificate");
+            buttonArray = [enrolCertificateButton, toggleCertificateStateButton, deleteCertificateButton];
+            buttonArray.forEach(button => {
+                button.classList.remove("disabled");
+                button.removeAttribute("disabled");
+            })
+
+            //Get each tab - pane class and remove show class
             let tabPanes = document.querySelectorAll(":not(#account).tab-pane");
             tabPanes.forEach((field) => {
                 field.classList.remove("show", "active");
             });
+
+            if (tabId) {
+                const tabLink = document.querySelector(`[data-bs-target="#${tabId}"]`);
+                let tabContent = document.querySelector(tabLink.getAttribute("data-bs-target"));
+                if (tabLink && tabContent) {
+                    // Activate the tab link
+                    new bootstrap.Tab(tabLink).show();
+                }
+            }
         }
     }
 
@@ -947,4 +983,20 @@ require_once(FILEROOT . "/header.php");
         updateCertificate();
     <?php endif; ?>
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tabLinks = document.querySelectorAll(".nav-link");
+        tabLinks.forEach((link) => {
+            link.addEventListener("click", function(event) {
+                this.preventDefault;
+                const tabId = this.getAttribute("data-bs-target");
+                const scrollPosition = window.scrollY;
+                location.hash = tabId; // Update the URL hash
+                window.scrollTo(0, -1); //Prevent scrolling
+            });
+        });
+    });
+</script>
+
 <?php require_once(FILEROOT . "/footer.php"); ?>

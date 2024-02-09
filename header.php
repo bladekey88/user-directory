@@ -122,12 +122,12 @@ if (!isset($title)) {
                 </div>
             </div>
             <?php if ($_SESSION["login_method"] == "CLIENT_CERTIFICATE") : ?>
-                <div class="alert alert-info  border-0 border-secondary border-bottom  border-2 rounded-0 h6 p-0 px-5 py-1">
+                <div class="alert alert-info  border-0 border-secondary border-bottom  border-2 rounded-0 h6 p-0 px-5 py-1" role="alert">
                     <div class="container">
                         <p class="mb-0">
                             You are presenting a valid certificate to this site, meaning that you will be automatically logged in.
                             If you wish to log in as another user or force a logout, you need to remove this certificate. This is controlled by your browser
-                            so consult your browser settings for further information. You can also disable certificate login from your <a class="link-offset-1" href="profile.php">profile page.</a>
+                            so consult your browser settings for further information. You can also disable certificate login from your <a class="link-offset-1" href="profile.php#certificates">profile page.</a>
                         </p>
                     </div>
                 </div>
