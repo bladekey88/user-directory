@@ -342,20 +342,17 @@ require_once(FILEROOT . "/header.php");
                                 <div class="mb-2">
                                     <label class="small" for="permissions-text">Permissions</label>
                                     <p id="permissions-text" class="fw-bold">
-                                        <?php
-                                        if (gettype($permissions) == "boolean") : ?>
+                                        <?php if (is_bool($permissions)) : ?>
                                     <ul>
-                                        <?php
-                                            while ($role_perm_result = mysqli_fetch_assoc($role_permissions)) {
-                                                echo "<li id='" . $role_perm_result["permission_id"] . "' class='mb-1 fw-bolder' >
-                                                        <code>" . $role_perm_result["permission"] . "</code>
-                                                    </li>";
-                                            }
-                                        ?>
+                                        <?php while ($role_perm_result = mysqli_fetch_assoc($role_permissions)) : ?>
+                                            <li id="<?php echo $role_perm_result["permission_id"]; ?>" class="mb-1 fw-bolder">
+                                                <code><?php echo $role_perm_result["permission"]; ?></code>
+                                            </li>
+                                        <?php endwhile; ?>
                                     </ul>
-                                <?php else :
-                                            echo $permissions;
-                                        endif;  ?>
+                                <?php else : ?>
+                                    <?php echo $permissions; ?>
+                                <?php endif;  ?>
                                 </p>
                                 </div>
                             </div>
@@ -407,7 +404,7 @@ require_once(FILEROOT . "/header.php");
                                                 </tr>
                                             </thead>
                                             <?php foreach ($ldap_user as $k => $v) : ?>
-                                                <tr style='cursor:auto'>
+                                                <tr>
                                                     <th>
                                                         <code><?php echo $k; ?></code>
                                                     </th>
@@ -575,8 +572,10 @@ require_once(FILEROOT . "/header.php");
             let deleteCertificateButton = document.getElementById("deleteCertificate");
             buttonArray = [enrolCertificateButton, toggleCertificateStateButton, deleteCertificateButton];
             buttonArray.forEach(button => {
-                button.classList.remove("disabled");
-                button.removeAttribute("disabled");
+                if (button) {
+                    button.classList.remove("disabled");
+                    button.removeAttribute("disabled");
+                }
             })
 
             //Get each tab - pane class and remove show class
