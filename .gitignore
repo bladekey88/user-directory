@@ -6,3 +6,6 @@ vendor/
 *.phpx
 *composer.lock
 *composer.json
+
+# Ignore during development
+send-email.php
