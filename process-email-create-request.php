@@ -64,6 +64,7 @@ try {
         $account->PersonFirstName = explode(" ", $_SESSION["name"])[0];
         $account->PersonLastName = explode(" ", $_SESSION["name"])[1];
         $account->Save();
+        include_once(FILEROOT . "/config/send-email.php");
     }
 } catch (Exception $e) {
     // Handle Exception
