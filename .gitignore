@@ -8,4 +8,4 @@ vendor/
 *composer.json
 
 # Ignore during development
-send-email.php
+*send-email.php
