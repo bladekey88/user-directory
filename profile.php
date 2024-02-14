@@ -12,7 +12,7 @@ if (isset($_GET["user"])) {
 
 //Global Permission and Role Check
 if (!check_user_permission(PERMISSION_VIEW_USER)) {
-    @require_once($_SERVER['DOCUMENT_ROOT'] . "/errordocs/403.php");
+    @require_once(dirname(__DIR__, 2) . "/htdocs/errordocs/403.php");
     exit();
 }
 
@@ -448,6 +448,7 @@ require_once(FILEROOT . "/header.php");
                                                 A client certificate is being presented by the browser. This certificate may be able to be used for login.
                                                 Clicking the button will enrol the certificate and overwrite any certifiate details that were previously stored.
                                                 This will be the case even if the presented certificate information is identical to the stored certificate information.
+                                                <span class="fw-semibold">By default, certificates are not enabled for login.</span>
                                             </p>
                                             <div class="bg-white p-3 border border-1 border-dark mb-1 pb-2 shadow text-dark">
                                                 <?php if ($cert_info && $cert_info["certificate_cn"] == $_SERVER["SSL_CLIENT_S_DN_CN"] && $cert_info["certificate_serial"] == $_SERVER["SSL_CLIENT_M_SERIAL"]) : ?>
@@ -921,7 +922,7 @@ require_once(FILEROOT . "/header.php");
                     delete_certificate = await updateDatabase(userid, null, null, true);
                     statusDiv.className = '';
                     statusDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
-                    statusDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Deletion Succesful</h6><p class="mb-0 pb-0">Certificate has been <span class="fw-bolder">deleted</span>.<br>You must log in using your username and password.</p>`
+                    statusDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Deletion Succesful</h6><p class="mb-0 pb-0">Certificate has been <span class="fw-bolder">deleted</span>.<br>You must log in using your username and password.</p><hr><p class='fw-semibold'>If you were logged in via certifiate authentication, then that session has been destroyed and you have been logged out.</h6>`
                     enableButton.parentNode.removeChild(enableButton);
                     deleteButton.parentNode.removeChild(deleteButton);
                 } catch (error) {
