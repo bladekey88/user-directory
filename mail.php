@@ -60,7 +60,8 @@ try {
     $account["current_size"] = round($email_account->Size, 3);
     $account["quota_used"] = $email_account->QuotaUsed;
     $account["address"] = $email_account->Address;
-    $account["last_login"] = strtotime($email_account->LastLogonTime);
+    $account["last_login"] = $email_account->LastLogonTime;
+    $last_login_date = DateTime::createFromFormat("d/m/Y H:i:s", $account["last_login"]);
     $account["first_name"] = $email_account->PersonFirstName;
     $account["last_name"] = $email_account->PersonLastName;
 
@@ -135,7 +136,7 @@ require_once(FILEROOT . "/header.php");
                         <tbody>
                             <tr>
                                 <td><?php echo $account["first_name"] . " " . $account["last_name"]; ?></td>
-                                <td><?php echo date("Y-m-d H:i:s", $account["last_login"]); ?></td>
+                                <td><?php echo $last_login_date->format("Y-m-d H:i:s"); ?></td>
                                 <td>
                                     <?php if ($account["active"] == 1) : ?>
                                         <span class="text-success fw-bolder">Active</span>
