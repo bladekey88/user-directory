@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . "/config/auth.php");
-
-session_destroy();
-redirect(LOGIN_URL, $header);
+@require_once(__DIR__ . "/config/functions.php");
+@session_start();
+@session_destroy();
+redirect("/login.php");

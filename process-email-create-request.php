@@ -36,8 +36,8 @@ try {
     $domain = $obBaseApp->Domains->ItemByName(HMAIL_DOMAIN);
 
     // Use a temporary email address until approved
-    $actual_email_address = $_SESSION["username"] . "@" . HMAIL_DOMAIN;
-    $temporary_email_address = "ZZ_PENDING_" . $_SESSION["username"] . "@" . HMAIL_DOMAIN;
+    $actual_email_address = $_SESSION["email"];
+    $temporary_email_address = "ZZ_PENDING_" . $_SESSION["email"];
 
     // Check if the actual email exists (idempotency)
     try {

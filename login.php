@@ -23,7 +23,7 @@ function executeQueryWithParams($conn, $sql, $params, $types)
 
 function authenticateWithUsernameAndPassword($conn, $username, $password)
 {
-    $sql = "SELECT t1.userid, t1.username,t1.password, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden, t3.role_name
+    $sql = "SELECT t1.userid, t1.username, t1.email, t1.password, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden, t3.role_name
     FROM users t1
     LEFT JOIN user_role t2 ON t1.userid = t2.user_id
     LEFT JOIN roles t3 ON t2.role_id = t3.role_id
@@ -48,7 +48,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
 
 function authenticateWithClientCertificate($conn, $username, $email)
 {
-    $sql = "SELECT t1.userid, t1.username,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
+    $sql = "SELECT t1.userid, t1.username, t1.email,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
     FROM users t1
     LEFT JOIN user_role t2 ON t1.userid = t2.user_id
     LEFT JOIN roles t3 ON t2.role_id = t3.role_id
@@ -95,6 +95,7 @@ function storeUserInfoInSession($row)
     $_SESSION['username'] = $row['username'];
     $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
     $_SESSION["role"] = $row["role_name"];
+    $_SESSION["email"] = $row["email"];
     $_SESSION["login_method"] = isset($row['password']) ? "AUTHENTICATION" : "CLIENT_CERTIFICATE";
 }
 
@@ -158,6 +159,7 @@ $conn->close();
             height: 100vh;
             background-image: url("assets/img//bg.jpg");
             background-size: cover;
+            background-position: center;
             background-repeat: no-repeat;
         }
 
@@ -166,8 +168,14 @@ $conn->close();
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 33%;
             box-sizing: border-box;
+            flex-basis: 50%;
+        }
+
+        @media (width >=1024px) {
+            .login-container {
+                flex-basis: 33%;
+            }
         }
 
         h2 {

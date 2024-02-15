@@ -88,6 +88,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($conn->query($sql) === TRUE) {
         echo json_encode("Certificate details $transaction_type_message. Refresh the page to see the changes.");
+        if ($delete_certificate && $_SESSION["login_method"] == "CLIENT_CERTIFICATE") {
+            session_destroy();
+        }
     } else {
         echo json_encode("An error occurred" . $conn->error);
         // echo "Error: " . $sql . "<br>" . $conn->error;

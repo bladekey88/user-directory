@@ -11,8 +11,8 @@ if (!check_user_permission(PERMISSION_VIEW_USER)) {
 // Set up
 $error = [];
 $message = [];
-$email_username = $_SESSION["username"] . "@" . HMAIL_DOMAIN;
-$temp_email_username = "ZZ_PENDING_" . $_SESSION["username"] . "@" . HMAIL_DOMAIN;
+$email_username = $_SESSION["email"];
+$temp_email_username = "ZZ_PENDING_" . $_SESSION["email"];
 
 // Create COM Instance and connect to it
 try {
@@ -63,6 +63,20 @@ try {
     $account["last_login"] = strtotime($email_account->LastLogonTime);
     $account["first_name"] = $email_account->PersonFirstName;
     $account["last_name"] = $email_account->PersonLastName;
+
+    $quota = $account["quota_used"] > 100 ? "100" : $account["quota_used"];
+    if ($quota >= 90) {
+        $quota_level = "danger";
+    } else if ($quota >= 66) {
+        $quota_level = "warning";
+    } else if ($quota >= 33) {
+        $quota_level = "primary";
+    } else {
+        $quota_level = "success";
+    }
+    $quota_display = '<div class="progress" role="progressbar" aria-label="Progress bar showing current usage as a percentage of the quota" aria-valuenow="' .  $account["quota_used"] . '" aria-valuemin="0" style="height:2rem" aria-valuemax="' . $account["max_size"] . '">
+    <div class="' . $quota_level . 'text-emphasis fw-bold progress-bar bg-' . $quota_level . '" style="width:' . $quota . '%;">' . $account["quota_used"] . '%</div>
+    </div>';
 } catch (com_exception $e) {
     $email_account = NULL;
 }
@@ -105,7 +119,7 @@ require_once(FILEROOT . "/header.php");
             <div class="card-header text-bg-primary rounded-0">Email Account Details</div>
             <div class="card-body">
                 <?php if ($email_account) :
-                    echo "<h6>You have access as <mark class='fw-bolder'>$email_username</mark> to " . $domain->Name . " mail domain.</h5>"; ?>
+                    echo "<h6>You have access as <mark class='fw-bolder'>$email_username</mark> to " . $domain->Name . " mail domain.</h6>"; ?>
                     <table class="table-responsive styled-table" id="email-account-table" name="email-account-table" style="width:100%;">
                         <thead>
                             <tr>
@@ -132,10 +146,13 @@ require_once(FILEROOT . "/header.php");
                                 <td><?php echo $account["current_size"] . " MB"; ?></td>
                                 <td><?php echo $account["max_size"] > 0 ? "Y" : "N"; ?></td>
                                 <td><?php echo $account["max_size"] > 0 ? $account["max_size"] . " MB" : "No Quota"; ?></td>
-                                <td><?php echo $account["max_size"] > 0 ? $account["quota_used"] . "%" : "No Quota"; ?></td>
+                                <td><?php echo $account["max_size"] > 0 ? $quota_display : "No Quota"; ?></td>
                             </tr>
                         </tbody>
                     </table>
+                    <p>
+                        <a href="https://www.hogwarts.wiz/mail" target="_blank" rel="noopener noreferrer" ?>Click here to access email through webmail</a>
+                    </p>
                 <?php else : ?>
                     <div class="alert alert-info border-2 border-secondary rounded-0">
                         <h6 class="text-dark fw-bolder">
@@ -178,6 +195,10 @@ require_once(FILEROOT . "/header.php");
     function createEmailAccountRequest() {
         const createEmailRequestButton = document.getElementById("btnEmailCreate");
         const alertProcess = document.querySelector(".alert-processing");
+        if (!createEmailRequestButton) {
+            return 0
+        }
+
         createEmailRequestButton.addEventListener('click', async (e) => {
             e.preventDefault();
 
