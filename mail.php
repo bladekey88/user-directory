@@ -33,7 +33,8 @@ if (!$login) {
     if ($fallback_login) {
         define("HMAIL_ADMIN_LOGIN", true);
     } else {
-        $error["auth_failed"] = "Authentication failed. This could be because the provided username/password are wrong, or the account does not exist, or the account is not active.";
+        $error["auth_failed"] = "Authentication to email server failed. This could be because the provided username/password are wrong, or the account does not exist, or the account is not active.";
+        print_r($error["auth_failed"]);
         exit();
     }
 }

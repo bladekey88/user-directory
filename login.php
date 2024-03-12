@@ -46,40 +46,6 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
     }
 }
 
-function authenticateWithClientCertificate($conn, $username, $email)
-{
-    $sql = "SELECT t1.userid, t1.username, t1.email,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
-    FROM users t1
-    LEFT JOIN user_role t2 ON t1.userid = t2.user_id
-    LEFT JOIN roles t3 ON t2.role_id = t3.role_id
-    LEFT JOIN user_certificate t4 ON t1.userid = t4.user_id
-    WHERE username = ? AND email = ? AND hidden IS NULL";
-    $params = [$username, $email];
-    $types = "ss";
-    $result = executeQueryWithParams($conn, $sql, $params, $types);
-    $row = $result->fetch_assoc();
-
-    if ($row && strval($row["locked"]) == "0") {
-        # If there is a registered certificate
-        if ($row["certificate_serial"]) {
-            if (
-                $row["certificate_serial"] == $_SERVER['SSL_CLIENT_M_SERIAL'] &&
-                $row["certificate_cn"] == $_SERVER['SSL_CLIENT_S_DN_CN'] &&
-                $row["certificate_email"] == $_SERVER['SSL_CLIENT_S_DN_Email'] &&
-                $row["enabled_by_user"] == 1 &&
-                $row["certificate_end"] > date("Y-m-d H:i:s")
-            ) {
-                startSecureSession();
-                storeUserInfoInSession($row);
-                redirect("/");
-            }
-        }
-    } else {
-        return "<p>Certificate is not valid or cannot be used for login.</p>
-        <p>Please choose another certificate, or use username and password to log in.</p>";
-    }
-}
-
 function startSecureSession()
 {
     session_destroy();
@@ -109,8 +75,8 @@ if ($conn->connect_error) {
 }
 $username_error = null;
 $password_error = null;
-$login_message  = null;
 $username = null;
+$login_message = $_SESSION["error"] ?? null;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // First check for Standard Authentication (UN + PW)
@@ -124,16 +90,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // If both username and password are provided, attempt login
     if (!$username_error && !$password_error) {
         $login_message = authenticateWithUsernameAndPassword($conn, $username, $password);
-    }
-    // Or check for Certificate Authentication
-} elseif ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
-    $cert_validate = validate_client_certificate();
-    if ($cert_validate["success"]) {
-        $username = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_CN"]);
-        $email = sanitise_user_input($_SERVER["SSL_CLIENT_S_DN_Email"]);
-        $login_message = authenticateWithClientCertificate($conn, $username, $email);
-    } else {
-        $login_message = $cert_validate["reason"];
     }
 }
 
@@ -202,6 +158,21 @@ $conn->close();
             cursor: pointer;
         }
 
+        .certificate-button {
+            display: block;
+            background-color: #2874A6;
+            padding: 0.5rem;
+            margin-block: 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+            box-sizing: border-box;
+            color: white;
+            cursor: pointer;
+            width: calc(100%);
+            text-decoration: none;
+            border: solid 1px black
+        }
+
         .error-message {
             color: red;
             margin-top: 8px;
@@ -223,7 +194,12 @@ $conn->close();
 
             <input type="submit" value="Login">
         </form>
-
+        <div>
+            <hr>
+            <a href="auth/process-cert-login.php" role="button" class="certificate-button">
+                Certificate Login
+            </a>
+        </div>
         <div class="error-message"><?php echo $username_error; ?></div>
         <div class="error-message"><?php echo $password_error; ?></div>
         <div class="error-message"><?php echo $login_message; ?></div>

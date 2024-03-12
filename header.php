@@ -84,7 +84,7 @@ if (!isset($title)) {
                 <div class="container">
                     <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
                         <a href="/directory" class="d-flex align-items-center my-2 my-lg-0 me-lg-auto text-white text-decoration-none">
-                            <img class="img-fluid logo" src="assets/img/logo_large.png" alt="Hogwarts Logo">
+                            <img class="img-fluid logo" src="<?php echo WEBROOT; ?>/assets/img/logo_large.png" alt="Hogwarts Logo">
                             <span class=" h5">Hogwarts Directory</span>
                         </a>
 
@@ -125,9 +125,8 @@ if (!isset($title)) {
                 <div class="alert alert-info  border-0 border-secondary border-bottom  border-2 rounded-0 h6 p-0 px-5 py-1" role="alert">
                     <div class="container">
                         <p class="mb-0">
-                            You are presenting a valid certificate to this site, meaning that you will be automatically logged in.
-                            If you wish to log in as another user or force a logout, you need to remove this certificate. This is controlled by your browser
-                            so consult your browser settings for further information. You can also disable certificate login from your <a class="link-offset-1" href="profile.php#certificates">profile page.</a>
+                            A valid client certificate was presented to this site for this account, enabling automatic login.
+                            You can also disable certificate login for this account from your <a class="link-offset-1" href="profile.php#certificates">profile page.</a>
                         </p>
                     </div>
                 </div>
