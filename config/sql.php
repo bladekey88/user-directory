@@ -121,11 +121,103 @@ function get_user_certificate(int $userid)
     return $sql;
 }
 
+function get_user_vle_info(string $username, string $idnumber)
+{
+    $sql = "SELECT 
+        u.id,
+        u.username,
+        u.auth,
+        -- Converting boolean values to strings
+        IF(u.confirmed=0,'false','true') AS emailconfirmed,
+        IF(u.policyagreed=0,'false','true') AS policyagreed,
+        IF(u.suspended=0,'false','true') AS suspended, 
+        u.idnumber,
+        u.firstname,
+        u.middlename,
+        u.lastname,
+        u.alternatename AS 'common_name',
+        -- Pivoting data from mdl_user_info_data table for specific fields
+        -- Using MAX and CASE to handle multiple values for each user
+        MAX(CASE WHEN uid.fieldid = 1 THEN uid.data END) AS house,
+        MAX(CASE WHEN uid.fieldid = 2 THEN uid.data END) AS year,
+        -- Handling boolean values for quidditch field
+        MAX(CASE WHEN uid.fieldid = 3 THEN IF(uid.data=0,'false','true') END) AS quidditch
+    FROM mdl_user u
+    -- Joining mdl_user_info_data table to retrieve additional user information
+        LEFT JOIN mdl_user_info_data uid ON u.id = uid.userid
+    WHERE u.username = '$username' AND u.deleted = 0 and u.idnumber = $idnumber
+    -- Grouping the results by user id and username
+    GROUP BY u.id, u.username;";
+    return $sql;
+}
 
-function run_sql(string $db_action)
+function get_user_vle_cohort(string $username)
+{
+    $sql = "SELECT u.username,
+    c.name AS cohort_name,
+    CASE 
+        WHEN c.idnumber IS NOT NULL THEN 'Custom'
+        WHEN c.component = 'core' THEN 'System'
+        ELSE 'Course'
+    END AS cohort_type
+    FROM 
+        mdl_user u
+    JOIN 
+        mdl_cohort_members cm ON u.id = cm.userid
+    JOIN 
+        mdl_cohort c ON cm.cohortid = c.id
+    WHERE u.username = '$username'
+    ORDER BY username, cohort_name, cohort_type";
+    return $sql;
+}
+
+function get_user_vle_enrolments(string $username, string $idnumber)
+{
+    $sql = "SELECT sub.*,other_table.fullname
+    FROM
+    (
+    SELECT u.id,
+        u.username,
+        ra.contextid,
+        ra.roleid,
+        ra.userid,
+        ra.component,
+        r.name AS 'role',
+        CASE
+            WHEN cx.contextlevel = 10 THEN 'System-wide'
+            WHEN cx.contextlevel = 30 THEN 'User-wide'
+            WHEN cx.contextlevel = 40 THEN CONCAT('Course category: ', cc.name)
+            WHEN cx.contextlevel = 50 THEN CONCAT('Course: ', co.fullname)
+            ELSE 'Unknown'
+        END AS context,
+        co.fullname AS 'coursename',
+        ccs.name AS 'categoryname',
+        cx.instanceid,
+        co.id AS courseid,        
+        cc.id AS categoryid
+    FROM mdl_user u
+    LEFT JOIN mdl_role_assignments ra ON u.id = ra.userid
+    LEFT JOIN mdl_role r ON ra.roleid = r.id
+    LEFT JOIN mdl_context cx ON ra.contextid = cx.id
+    LEFT JOIN mdl_course co ON cx.contextlevel=50
+    AND co.id = cx.instanceid
+    LEFT JOIN mdl_course_categories cc ON cx.contextlevel=40
+    AND cc.id = cx.instanceid
+    LEFT JOIN mdl_course_categories ccs ON ccs.id = co.category
+    where u.username = '$username' and u.idnumber = '$idnumber'
+    ORDER BY username,
+            role,
+            context) AS sub
+    LEFT JOIN mdl_course AS other_table ON sub.categoryid IS NOT NULL
+    AND other_table.category = sub.categoryid;";
+
+    return $sql;
+}
+
+function run_sql(string $db_action, $database = DB_DB)
 {
     $db =  new MysqlConnection();
-    $db->connect(DB_HOST, DB_USER, DB_PW, DB_DB);
+    $db->connect(DB_HOST, DB_USER, DB_PW, $database);
     $output = $db->query($db_action);
     if ($output) {
         return $output;
