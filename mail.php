@@ -100,7 +100,7 @@ require_once(FILEROOT . "/header.php");
     }
 
     .styled-table th,
-    .style-table td {
+    .styled-table td {
         /* padding-inline: 0; */
         margin: 0;
     }
