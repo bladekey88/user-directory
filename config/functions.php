@@ -41,7 +41,28 @@ class LDAPConnection
 {
     var $connection = False;
 
-    function __construct()
+    function __construct($host, $port = 389, $timeout = 0.1)
+    {
+        // Check if the host starts with ldap:// or ldaps://
+        if (strpos($host, 'ldap://') !== 0 && strpos($host, 'ldaps://') !== 0) {
+            throw new Exception("Invalid host provided: '$host'. Only LDAP hosts are supported.");
+        }
+        // Extract the host from the provided URL
+        $host = str_replace(['ldap://', 'ldaps://'], '', $host);
+        $errno = $errstr = 0;
+
+        // Use the method fsockopen to test TCP connect. No way to ignore SSL certificate errors with this method!
+        $op = @fsockopen($host, $port, $errno, $errstr, $timeout);
+        $result = $op ? true : false;
+
+        if ($op) {
+            fclose($op); // Explicitly close open socket connection
+            $this->connect();
+        }
+        return $result;
+    }
+
+    private function connect()
     {
         // connect to ldap server
         @$ldapconn = ldap_connect("ldap://" . LDAP_URI)
@@ -192,13 +213,18 @@ function sanitise_user_input($input, $type = 'text')
 }
 
 
-function _run_ldap(string $filter, array $fields = null): array
+function _run_ldap(string $filter, array $fields = null): string|array
 
 /** Private(ish) function to run queries against LDAP.
  *  Use by other function, but could be used directly if necessary */
 
 {
-    $ldap = new LDAPConnection();
+    try {
+        $ldap = new LDAPConnection(LDAP_PROTOCOL . LDAP_HOST);
+    } catch (Exception $e) {
+        // Handle any exceptions thrown by the LDAPConnection constructor
+        return ["Error: " . $e->getMessage()];
+    }
     if (!$ldap->connection) {
         return [ERROR_LDAP_CONNECTION];
     }
