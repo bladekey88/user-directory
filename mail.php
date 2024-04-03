@@ -4,7 +4,7 @@ $title = "Email Services";
 
 //Global Permission and Role Check
 if (!check_user_permission(PERMISSION_VIEW_USER)) {
-    @require_once($_SERVER['DOCUMENT_ROOT'] . "/errordocs/403.php");
+    @require_once(dirname(FILEROOT, 2) . "/htdocs/errordocs/403.php");
     exit();
 }
 
