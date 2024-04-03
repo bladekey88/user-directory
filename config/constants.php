@@ -16,6 +16,7 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'moodle');
 define('DB_PW', 'GEDIb1diQIvo'); #TODO REMOVE FOR PRODUCTION
 define('DB_DB', 'users');
+define('MOODLE_DB', "moodle");
 
 // HMAIL Constants
 define("HMAIL_ADMIN_USER", "system@hogwarts.wiz");
@@ -27,6 +28,7 @@ define("SCHOOL_HOUSES", ["GRYFFINDOR", "HUFFLEPUFF", "RAVENCLAW", "SLYTHERIN", "
 define("SCHOOL_YEARS", ["FIRST YEAR", "SECOND YEAR", "THIRD YEAR", "FOURTH YEAR", "FIFTH YEAR", "SIXTH YEAR", "SEVENTH YEAR", "STAFF", "NONE"]);
 
 // LDAP Constants
+define("LDAP_PROTOCOL", "ldap://");
 define("LDAP_HOST", DB_HOST);
 define("LDAP_VERSION", 3);
 define("LDAP_PORT", 389);
