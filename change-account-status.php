@@ -46,7 +46,7 @@ else if (!isValidAction($action)) {
 function sendErrorResponse($statusCode, $message)
 {
     header("HTTP/1.1 $statusCode $message");
-    @require_once($_SERVER['DOCUMENT_ROOT'] . "/errordocs/$statusCode.php");
+    @require_once(dirname(FILEROOT, 2) . "/htdocs/errordocs/$statusCode.php");
     exit();
 }
 
