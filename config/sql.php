@@ -151,29 +151,34 @@ function get_user_vle_info(string $username, string $idnumber)
     return $sql;
 }
 
-function get_user_vle_cohort(string $username)
+function get_user_vle_cohort(string $username, string $idnumber)
 {
     $sql = "SELECT u.username,
-    c.name AS cohort_name,
-    CASE 
-        WHEN c.idnumber IS NOT NULL THEN 'Custom'
-        WHEN c.component = 'core' THEN 'System'
-        ELSE 'Course'
-    END AS cohort_type
-    FROM 
-        mdl_user u
-    JOIN 
-        mdl_cohort_members cm ON u.id = cm.userid
-    JOIN 
-        mdl_cohort c ON cm.cohortid = c.id
-    WHERE u.username = '$username'
-    ORDER BY username, cohort_name, cohort_type";
+        c.name AS cohort_name,
+        c.description,
+        CASE
+            WHEN c.component IS NULL OR c.component = '' THEN 'Core'
+            WHEN c.component <> '' THEN 'Profile Attribute Based'
+            ELSE 'Course'
+        END AS cohort_type,
+        CASE
+            WHEN cx.contextlevel = 10 THEN 'System'
+            WHEN cx.contextlevel = 40 THEN 'Course Category'
+        END AS 'cohort_scope',
+        cc.name AS 'category_name'
+    FROM mdl_user u
+        JOIN mdl_cohort_members cm ON u.id = cm.userid
+        JOIN mdl_cohort c ON cm.cohortid = c.id
+        JOIN mdl_context cx ON c.contextid = cx.id
+        LEFT JOIN mdl_course_categories cc ON cx.contextlevel=40 AND cx.instanceid = cc.id
+    WHERE u.username = '$username' AND u.idnumber = '$idnumber'
+    ORDER BY username,cohort_name,cohort_type;";
     return $sql;
 }
 
 function get_user_vle_enrolments(string $username, string $idnumber)
 {
-    $sql = "SELECT sub.*,other_table.fullname
+    $sql = "SELECT sub.*,other_table.fullname as category_coursename
     FROM
     (
     SELECT u.id,
@@ -184,32 +189,35 @@ function get_user_vle_enrolments(string $username, string $idnumber)
         ra.component,
         r.name AS 'role',
         CASE
-            WHEN cx.contextlevel = 10 THEN 'System-wide'
-            WHEN cx.contextlevel = 30 THEN 'User-wide'
-            WHEN cx.contextlevel = 40 THEN CONCAT('Course category: ', cc.name)
-            WHEN cx.contextlevel = 50 THEN CONCAT('Course: ', co.fullname)
+            WHEN cx.contextlevel = 10 THEN 'System'
+            WHEN cx.contextlevel = 30 THEN 'User'
+            WHEN cx.contextlevel = 40 THEN 'Category'
+            WHEN cx.contextlevel = 50 THEN 'Course'
             ELSE 'Unknown'
         END AS context,
         co.fullname AS 'coursename',
-        ccs.name AS 'categoryname',
+        cc.name AS 'categoryname',
+        ccs.name AS 'course_categoryname',
         cx.instanceid,
         co.id AS courseid,        
-        cc.id AS categoryid
+        cc.id AS categoryid,
+        us.username as parent_child_username,
+        concat(us.firstname, ' ', us.lastname) as child_name
     FROM mdl_user u
     LEFT JOIN mdl_role_assignments ra ON u.id = ra.userid
     LEFT JOIN mdl_role r ON ra.roleid = r.id
     LEFT JOIN mdl_context cx ON ra.contextid = cx.id
-    LEFT JOIN mdl_course co ON cx.contextlevel=50
-    AND co.id = cx.instanceid
-    LEFT JOIN mdl_course_categories cc ON cx.contextlevel=40
-    AND cc.id = cx.instanceid
+    LEFT JOIN mdl_course co ON cx.contextlevel=50 AND co.id = cx.instanceid
+    LEFT JOIN mdl_course_categories cc ON cx.contextlevel=40 AND cc.id = cx.instanceid
     LEFT JOIN mdl_course_categories ccs ON ccs.id = co.category
+    LEFT JOIN mdl_user us ON cx.contextlevel=30 AND  cx.instanceid = us.id
     where u.username = '$username' and u.idnumber = '$idnumber'
-    ORDER BY username,
+    ORDER BY u.username,
             role,
             context) AS sub
     LEFT JOIN mdl_course AS other_table ON sub.categoryid IS NOT NULL
-    AND other_table.category = sub.categoryid;";
+    AND other_table.category = sub.categoryid
+    order by sub.coursename;";
 
     return $sql;
 }

@@ -378,6 +378,9 @@ require_once(FILEROOT . "/header.php");
                                                 <p id="inputTeam" data-editable="false" class="fw-bold">Team Member</p>
                                             </div>
                                         <?php endif; ?>
+                                        <?php if ($_SESSION["username"] == $row["username"]) : ?>
+                                            <a href="<?php echo WEBROOT . "/vle.php"; ?>">View VLE Information</a>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
