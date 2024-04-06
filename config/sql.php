@@ -96,10 +96,11 @@ function get_user_permissions(string $userid)
     WHERE t1.role_id IN (
         SELECT role_id
         FROM user_role
-        WHERE user_id = '$userid'
+        WHERE user_id = :userid
     )
     GROUP BY t1.role_id;";
-    return ($sql);
+    $params = ["userid" => $userid];
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
 
 function get_user_role(string $userid)

@@ -245,8 +245,8 @@ class LDAPConnection
 
 function check_user_permission($permission)
 {
-    $get_user_permissions = run_sql(get_user_permissions($_SESSION["userid"]));
-    $result = mysqli_fetch_assoc($get_user_permissions);
+    $get_user_permissions = run_sql2(get_user_permissions($_SESSION["userid"]));
+    $result = $get_user_permissions[0];
     if ($result) {
         return $result["bitmask"] & $permission;
     }
