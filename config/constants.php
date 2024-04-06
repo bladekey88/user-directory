@@ -12,6 +12,7 @@ define("WEBROOT", "https://secure.hogwarts.wiz/directory");
 define("FILEROOT", dirname(__FILE__, 2));
 
 // Database Constants
+define('DB_TYPE', "mysql");
 define('DB_HOST', 'localhost');
 define('DB_USER', 'moodle');
 define('DB_PW', 'GEDIb1diQIvo'); #TODO REMOVE FOR PRODUCTION

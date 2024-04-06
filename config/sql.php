@@ -1,37 +1,67 @@
 <?php
 
-function get_all_users(int $hidden = null)
+define("SELECT", "SELECT");
+define("INSERT", "INSERT");
+define("UPDATE", "UPDATE");
+define("DELETE", "DELETE");
+
+
+// function get_all_users(int $hidden = null)
+// {
+//     if (!$hidden) {
+//         $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,idnumber,institution,country,city,locked,last_updated
+//         FROM users 
+//         WHERE hidden IS null
+//         ORDER BY locked DESC,username ASC;";
+//     } else {
+//         $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,idnumber,institution,country,city,locked,last_updated,hidden
+//         FROM users
+//         ORDER BY locked DESC,username ASC;";
+//     }
+//     return $sql;
+// }
+
+/**
+ * Generates SQL query and parameters to retrieve all users.
+ *
+ * @param int|null $hidden If provided, filters users by hidden status.
+ * @return array An associative array containing the SQL query and parameters.
+ */
+function get_all_users(int|null $hidden = null): array
 {
+    $sql = "SELECT userid, username, email, firstname, lastname, commonname, middlename, house, year, quidditch, idnumber, institution, country, city, locked, last_updated, hidden";
+    $params = [];
+
+
     if (!$hidden) {
-        $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,idnumber,institution,country,city,locked,last_updated
-        FROM users 
-        WHERE hidden IS null
-        ORDER BY locked DESC,username ASC;";
+        $sql .= " FROM users WHERE hidden IS :hidden";
     } else {
-        $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,idnumber,institution,country,city,locked,last_updated,hidden
-        FROM users
-        ORDER BY locked DESC,username ASC;";
+        $sql .= " FROM users WHERE hidden IS NOT :hidden";
     }
-    return $sql;
+    $params['hidden'] = Null;
+    $sql .= " ORDER BY locked DESC, username ASC";
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
 
-function get_specific_user(string $username, $exclude_hidden = true)
+function get_specific_user(string $username, bool $exclude_hidden = true)
 {
     $exclude_hidden ? $hidden_stmt = "AND hidden IS NULL" : $hidden_stmt = null;
     $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,t1.idnumber,institution,country,city,locked,last_updated,t2.path
     FROM users t1
     LEFT JOIN user_profilepicture t2
     ON t1.idnumber = t2.idnumber
-    WHERE username = '$username' $hidden_stmt;";
-    return $sql;
+    WHERE username = :username $hidden_stmt;";
+    $params = ["username" => $username];
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
 
 function check_profile_picture_exists(string $idnumber)
 {
     $sql = "SELECT idnumber,path
     FROM user_profilepicture
-    WHERE idnumber = '$idnumber';";
-    return $sql;
+    WHERE idnumber = :idnumber;";
+    $params = ["idnumber" => $idnumber];
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
 
 function insert_new_profile_picture(string $idnumber, string $path)
@@ -231,4 +261,80 @@ function run_sql(string $db_action, $database = DB_DB)
         return $output;
     }
     $db->close_connection();
+}
+
+/**
+ * Executes common, simple SQL operations such as select, insert, update, or delete.
+ * @param mixed $mode uses the function passed to string to get other values rather than applying directly
+ * @param string $operation The type of SQL operation to perform (select, insert, update, delete).
+ * @param string|null $sql The SQL query to execute (required for select operation only).
+ * @param array $params The parameters to bind to the SQL query (required for select operation only).
+ * @param string|null $table The table name for insert, update, or delete operations.
+ * @param array $data The data to insert or update (required for insert and update operations only).
+ * @param array $where The conditions for update or delete operations (required for update and delete operations only).
+ * @param string $database The name of the database to use (optional, defaults to DB_DB).
+ * @return mixed The result of the SQL operation.
+ * @throws Exception If an invalid operation is supplied or if required parameters are missing.
+ */
+function run_sql2(
+
+    ?array $mode = [],
+    ?string $operation = null,
+    ?string $sql = null,
+    ?array $params = [],
+    ?string $table = null,
+    ?array $data = [],
+    ?array $where = [],
+    string $database = DB_DB
+) {
+    $operation = $mode["operation"] ?? null;
+    $sql = $mode["sql"] ?? $sql;
+    $params = $mode["params"] ?? $params;
+    $table = $mode["table"] ?? $table;
+    $data = $mode["data"] ?? $data;
+    $where = $mode["where"] ?? $where;
+
+    // Valid operations only
+    try {
+        $standardOperations = ['select', 'insert', 'update', 'delete'];
+        $operation = strtolower($operation);
+        if (!in_array($operation, $standardOperations)) {
+            throw new Exception("Invalid operation supplied: '$operation");
+        }
+
+        // Create DB connection and run queries
+        $db = new DatabaseConnection(DB_TYPE, DB_HOST, DB_USER, DB_PW, $database);
+        if ($db->isConnected()) {
+            switch ($operation) {
+                case 'select':
+                    if (!$sql || (isset($params) && !is_array($params))) {
+                        throw new Exception("select operations must have sql defined and associated params as array");
+                    } elseif (strpos(strtoupper($sql), "WHERE") && (!$params)) {
+                        throw new Exception("select operations with a WHERE clause must have the named params defined in the params array");
+                    } else {
+                        return $db->select($sql, $params);
+                    }
+                case 'insert':
+                    if (!$table || !$data) {
+                        throw new Exception("insert operations must have a table defined and a where clause");
+                    } else {
+                        return $db->insert($table, $data);
+                    }
+                case 'update':
+                    if (!$where || !$table) {
+                        throw new Exception("update operations must have a table defined and a where clause");
+                    } else {
+                        return $db->update($table, $data, $where);
+                    }
+                case 'delete':
+                    if (!$where || !$table) {
+                        throw new Exception("delete operations must have a table defined and a where clause");
+                    } else {
+                        return $db->delete($table, $where);
+                    }
+            }
+        }
+    } catch (Exception $e) {
+        echo "An error occured: '" . $e->getMessage() . "'";
+    }
 }

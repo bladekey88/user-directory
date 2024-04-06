@@ -23,29 +23,29 @@ if ($username != $_SESSION["username"]) {
 }
 
 // Get user details from database
-$user = run_sql(get_specific_user($username));
-$row = mysqli_fetch_assoc($user);  #Only expect one result so don't loop TODO //FUNCTION THIS
-if ($row) {
+$user = run_sql2(get_specific_user($username));
+if ($user) {
+    $user = $user[0];
     // Handle Optional Fields (display only)
-    if (strlen($row["middlename"]) == 0) {
+    if (strlen($user["middlename"]) == 0) {
         $middlename = htmlentities("No Value");
     } else {
-        $middlename = $row["middlename"];
+        $middlename = $user["middlename"];
     }
 
-    if (!$row["quidditch"] || $row["quidditch"] == 0) {
+    if (!$user["quidditch"] || $user["quidditch"] == 0) {
         $quidditch = null;
     } else {
         $quidditch = true;
     }
 
-    if (!$row["path"]) {
+    if (!$user["path"]) {
         $profile_image = "assets/img/user-default.png";
     } else {
-        $profile_image = $row["path"];
+        $profile_image = $user["path"];
     }
 
-    $hidden = $row["locked"] ? "hidden" : null;
+    $hidden = $user["locked"] ? "hidden" : null;
 } else {
     echo "<div class='container my-5 fw-bold alert alert-warning rounded-0 border-0 border-start border-end border-danger border-5 text-danger h5'>
     Error - The user profile was not found. Please contact IT Services for further details, or return to the previous page to try again.
@@ -55,7 +55,7 @@ if ($row) {
 
 //Get user role and permission details for displayed user
 // Get role details first
-$user_role = run_sql(get_user_role($row["userid"]));
+$user_role = run_sql(get_user_role($user["userid"]));
 $user_role_result = mysqli_fetch_assoc($user_role);
 if ($user_role_result) {
     $role = ucwords(strtolower(sanitise_user_input($user_role_result["role_name"])));
@@ -76,7 +76,7 @@ if (mysqli_num_rows($user_role) > 0) {
 }
 
 // Start the html
-$title =  $row["firstname"] . " " . $row["lastname"] . " - Profile Page";
+$title =  $user["firstname"] . " " . $user["lastname"] . " - Profile Page";
 require_once(FILEROOT . "/header.php");
 
 ?>
@@ -160,7 +160,7 @@ require_once(FILEROOT . "/header.php");
             </div>
         </noscript>
         <div id="lockAccountStatus"></div>
-        <?php if ($row["locked"] && (check_user_permission(PERMISSION_UNLOCK_USER) || check_user_permission(PERMISSION_LOCK_USER))) : ?>
+        <?php if ($user["locked"] && (check_user_permission(PERMISSION_UNLOCK_USER) || check_user_permission(PERMISSION_LOCK_USER))) : ?>
             <div id='accountLockedAlert' class="alert alert-warning border border-2 border-danger h6 rounded-0 pt-2 pb-1">
                 <h5 class="text-danger text-start fw-bolder">
                     <i class="bi bi-exclamation-triangle pe-2"></i>
@@ -186,7 +186,7 @@ require_once(FILEROOT . "/header.php");
         <?php endif; ?>
         <!-- Account page navigation-->
         <nav class="nav nav-borders">
-            <h4 class="m-0"><?php echo $row["firstname"] . " " . $row["lastname"]; ?></h4>
+            <h4 class="m-0"><?php echo $user["firstname"] . " " . $user["lastname"]; ?></h4>
         </nav>
         <hr class="mt-0 mb-4">
         <div class="row">
@@ -212,7 +212,7 @@ require_once(FILEROOT . "/header.php");
                                     <label class="form-label p-0" for="profilePicture">Upload New Profile Picture</label>
                                     <div class="text-start small font-italic text-muted">JPG, JFIF, or PNG no larger than 2 MB</div>
                                     <input type="file" name="profilePicture" id="profilePicture" class="rounded-0 border border-secondary border-1 form-control-sm">
-                                    <input type="hidden" name="idnumber" id="idnumber" value="<?php echo $row["idnumber"]; ?>">
+                                    <input type="hidden" name="idnumber" id="idnumber" value="<?php echo $user["idnumber"]; ?>">
                                     <button type="submit" class="btn btn-primary rounded-0 btn-sm">Upload</button>
                                 </div>
                                 <div id="uploadStatus"></div>
@@ -255,14 +255,14 @@ require_once(FILEROOT . "/header.php");
                                 <p class="my-0">Account Details</p>
                                 <div class="account-buttons" id="account-buttons">
                                     <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"]) || check_user_permission(PERMISSION_EDIT_ANY_PROFILE)) : ?>
-                                        <a role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0" data-enabled="false" id="btneditprofile" href="<?php echo WEBROOT . "/edit-profile.php?user=" . $row["username"]; ?>">Edit Profile</a>
+                                        <a role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0" data-enabled="false" id="btneditprofile" href="<?php echo WEBROOT . "/edit-profile.php?user=" . $user["username"]; ?>">Edit Profile</a>
                                     <?php endif; ?>
                                     <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"])) : ?>
                                         <a role="button" id="btnViewEmail" class="btn btn-sm btn-outline-success border-2 rounded-0" href="<?php echo WEBROOT . "/mail.php"; ?>">
                                             <i class="bi bi-envelope pe-1"></i>View Email Account Status
                                         </a>
                                     <?php endif; ?>
-                                    <?php if (check_user_permission(PERMISSION_LOCK_USER) && $row["locked"] == 0) : ?>
+                                    <?php if (check_user_permission(PERMISSION_LOCK_USER) && $user["locked"] == 0) : ?>
                                         <a role="button" id="btnlockaccount" class="btn btn-sm btn-outline-danger border-2 rounded-0 <?php echo $hidden; ?>" href="<?php echo WEBROOT . "/change-account-status.php?action=lock&user=$username"; ?>">
                                             <i class="bi bi-lock pe-1"></i>Lock Account
                                         </a>
@@ -273,19 +273,19 @@ require_once(FILEROOT . "/header.php");
                                 <!-- Form Group (username)-->
                                 <div class="mb-2 border-bottom">
                                     <label class="small mb-1" for="inputUsername">Username</label>
-                                    <p id="inputUsername" data-editable="false" class="fw-bold"><?php echo $row["username"]; ?></p>
+                                    <p id="inputUsername" data-editable="false" class="fw-bold"><?php echo $user["username"]; ?></p>
                                 </div>
                                 <!-- Form Row-->
                                 <div class="row gx-3 mb-2">
                                     <!-- Form Group (first name)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputFirstName">First name</label>
-                                        <p id="inputFirstName" data-editable="false" class="fw-bold"><?php echo $row["firstname"]; ?></p>
+                                        <p id="inputFirstName" data-editable="false" class="fw-bold"><?php echo $user["firstname"]; ?></p>
                                     </div>
                                     <!-- Form Group (last name)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputLastName">Last name</label>
-                                        <p id="inputLastName" data-editable="false" class="fw-bold"><?php echo $row["lastname"]; ?></p>
+                                        <p id="inputLastName" data-editable="false" class="fw-bold"><?php echo $user["lastname"]; ?></p>
                                     </div>
                                 </div>
                                 <!-- Form Row-->
@@ -293,7 +293,7 @@ require_once(FILEROOT . "/header.php");
                                     <!-- Form Group (Other name)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputCommonName">Preferred Name/Title</label>
-                                        <p id="inputCommonName" data-editable="true" class="fw-bold"><?php echo $row["commonname"]; ?>
+                                        <p id="inputCommonName" data-editable="true" class="fw-bold"><?php echo $user["commonname"]; ?>
                                         </p>
                                     </div>
                                     <!-- Form Group (Middle)-->
@@ -307,24 +307,24 @@ require_once(FILEROOT . "/header.php");
                                     <!-- Form Group (email address)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputEmailAddress">Email address</label>
-                                        <p id="inputEmailAddress" data-editable="false" class="fw-bold"><?php echo $row["email"]; ?></p>
+                                        <p id="inputEmailAddress" data-editable="false" class="fw-bold"><?php echo $user["email"]; ?></p>
                                     </div>
                                     <!-- Form Group (ID number)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputID">ID number</label>
-                                        <p id="inputID" data-editable="false" class="fw-bold"><?php echo $row["idnumber"]; ?></p>
+                                        <p id="inputID" data-editable="false" class="fw-bold"><?php echo $user["idnumber"]; ?></p>
                                     </div>
                                 </div>
                                 <div class="row gx-3 mb-2">
                                     <!-- Form Group (Country)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputCountry">Country</label>
-                                        <p id="inputCountry" data-editable="true" class="fw-bold"><?php echo $row["country"]; ?></p>
+                                        <p id="inputCountry" data-editable="true" class="fw-bold"><?php echo $user["country"]; ?></p>
                                     </div>
                                     <!-- Form Group (City)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputCity">City</label>
-                                        <p id="inputCity" data-editable="true" class="fw-bold"><?php echo $row["city"]; ?></p>
+                                        <p id="inputCity" data-editable="true" class="fw-bold"><?php echo $user["city"]; ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -366,11 +366,11 @@ require_once(FILEROOT . "/header.php");
                                     <div class="d-flex justify-content-around align-items-flex-start flex-column">
                                         <div>
                                             <label class="small mb-1" for="inputHouse">House</label>
-                                            <p id="inputHouse" data-editable="false" class="fw-bold"><?php echo $row["house"]; ?></p>
+                                            <p id="inputHouse" data-editable="false" class="fw-bold"><?php echo $user["house"]; ?></p>
                                         </div>
                                         <div>
                                             <label class="small mb-1" for="inputYear">Year</label>
-                                            <p id="inputYear" data-editable="false" class="fw-bold"><?php echo $row["year"]; ?></p>
+                                            <p id="inputYear" data-editable="false" class="fw-bold"><?php echo $user["year"]; ?></p>
                                         </div>
                                         <?php if ($quidditch) : ?>
                                             <div>
@@ -378,7 +378,7 @@ require_once(FILEROOT . "/header.php");
                                                 <p id="inputTeam" data-editable="false" class="fw-bold">Team Member</p>
                                             </div>
                                         <?php endif; ?>
-                                        <?php if ($_SESSION["username"] == $row["username"]) : ?>
+                                        <?php if ($_SESSION["username"] == $user["username"]) : ?>
                                             <a href="<?php echo WEBROOT . "/vle.php"; ?>">View VLE Information</a>
                                         <?php endif; ?>
                                     </div>
@@ -393,7 +393,7 @@ require_once(FILEROOT . "/header.php");
                                 <div class="mb-2">
                                     <?php
                                     // Get the information from LDAP
-                                    $ldap_user = ldap_get_user_info($row["username"])[0]; //Expect only user, therefore retrn first index
+                                    $ldap_user = ldap_get_user_info($user["username"])[0]; //Expect only user, therefore retrn first index
                                     if (gettype($ldap_user) == "array") {
                                         ksort($ldap_user);
                                     }
@@ -436,7 +436,7 @@ require_once(FILEROOT . "/header.php");
                             </div>
                         </div>
 
-                        <?php if ($_SESSION["username"] == $row["username"]) : $cert_info = get_certificate_information(); ?>
+                        <?php if ($_SESSION["username"] == $user["username"]) : $cert_info = get_certificate_information(); ?>
 
                             <div class="tab-pane fade show active" id="certificates" role="tabpanel" aria-labelledby="certificates-tab" tabindex="0">
                                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -832,7 +832,7 @@ require_once(FILEROOT . "/header.php");
             let oldValue = field.dataset.originalContent
             if (newValue != oldValue) {
                 let fieldName = field.id.split("input")[1].toLowerCase();
-                let userid = <?php echo $row["userid"]; ?>;
+                let userid = <?php echo $user["userid"]; ?>;
                 let output = await updateDatabase(userid, fieldName, newValue);
                 const existingBadge = field.previousElementSibling;
                 if (existingBadge && existingBadge.classList.contains("badge", "output", "mx-1")) {

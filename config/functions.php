@@ -1,6 +1,105 @@
 <?php
 require_once("constants.php");
 
+class DatabaseConnection
+{
+    private $pdo;
+
+    public function __construct($db_type, $db_hostname, $db_username, $db_password = null, $db_name)
+    {
+        try {
+            $dsn = "$db_type:host=$db_hostname;dbname=$db_name;";
+            $this->pdo = new PDO($dsn, $db_username, $db_password);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            // Check if the error code indicates a connection failure
+            echo ("Connection failed: An unexpected error occurred:  " . $e->getMessage());
+        }
+    }
+
+    public function __destruct()
+    {
+        // Close the database connection
+        $this->pdo = null;
+    }
+
+    public function isConnected(): bool
+    {
+        // Check if the PDO object is instantiated and not null
+        return $this->pdo instanceof PDO && $this->pdo !== null;
+    }
+
+    public function select($sql, $where_params = [])
+    {
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            if ($where_params) {
+                foreach ($where_params as $key => $value) {
+                    $stmt->bindValue(":$key", $value);
+                }
+            }
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            throw new Exception("Error executing query: " . $e->getMessage());
+        }
+    }
+
+    public function insert($table, $data)
+    // Constructs and executes the INSERT SQL query with named placeholders
+    {
+        try {
+            $keys = implode(', ', array_keys($data));
+            // Create named placeholders for values
+            $values = ':' . implode(', :', array_keys($data));
+            $sql = "INSERT INTO $table ($keys) VALUES ($values)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($data);
+            return $this->pdo->lastInsertId();
+        } catch (PDOException $e) {
+            throw new Exception("Error executing query: " . $e->getMessage());
+        }
+    }
+
+    public function update($table, $data, $where)
+    // Constructs and executes the UPDATE SQL query with named placeholders
+    {
+        $set = implode(', ', array_map(fn ($k) => "$k = :$k", array_keys($data)));
+        $where_clase = implode(' AND ', array_map(fn ($k) => "$k = :where_$k", array_keys($where)));
+        $sql = "UPDATE $table SET $set WHERE $where_clase";
+        $stmt = $this->pdo->prepare($sql);
+
+        // Bind the values from $data as parameters
+        foreach ($data as $key => $value) {
+            $stmt->bindValue(":$key", $value);
+        }
+        // Bind the values from $where as parameters
+        foreach ($where as $key => $value) {
+            $stmt->bindValue(":where_$key", $value);
+        }
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+
+    public function delete($table, $where)
+    // Constructs and executes the DELETE SQL query with named placeholders
+    {
+        $whereClause = implode(' AND ', array_map(fn ($k) => "$k = :where_$k", array_keys($where)));
+        $sql = "DELETE FROM $table WHERE $whereClause";
+        $stmt = $this->pdo->prepare($sql);
+
+        // Bind the values from $where as parameters
+        foreach ($where as $key => $value) {
+            $stmt->bindValue(":where_$key", $value);
+        }
+        $stmt->execute();
+        return $stmt->rowCount();
+    }
+}
+
+
+
+
 class MysqlConnection
 {
     var $connection = false;

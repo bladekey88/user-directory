@@ -11,7 +11,7 @@ if (!check_user_permission(PERMISSION_VIEW_ALL_USERS)) {
 }
 
 // Get all Users
-$users = run_sql(get_all_users());
+$users = run_sql2(get_all_users());
 ?>
 
 <main>
@@ -25,7 +25,7 @@ $users = run_sql(get_all_users());
         </nav>
         <hr class="mt-0 mb-4">
         <?php
-        if ($users->num_rows) : ?>
+        if ($users) : ?>
             <table class="styled-table" id="users" name="users" style="width:100%" ;>
                 <thead>
                     <tr>
