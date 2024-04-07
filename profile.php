@@ -55,8 +55,8 @@ if ($user) {
 
 //Get user role and permission details for displayed user
 // Get role details first
-$user_role = run_sql(get_user_role($user["userid"]));
-$user_role_result = mysqli_fetch_assoc($user_role);
+$user_role_query = run_sql2(get_user_role($user["userid"]));
+$user_role_result = $user_role_query[0];
 if ($user_role_result) {
     $role = ucwords(strtolower(sanitise_user_input($user_role_result["role_name"])));
 } else {
@@ -64,9 +64,9 @@ if ($user_role_result) {
 }
 
 //Now get permission details for the role
-if (mysqli_num_rows($user_role) > 0) {
-    $role_permissions = run_sql(get_role_permissions($user_role_result['role_id']));
-    if (mysqli_num_rows($role_permissions) == 0) {
+if (count($user_role_query) > 0) {
+    $role_permissions = run_sql2(get_role_permissions($user_role_result['role_id']));
+    if (count($role_permissions) == 0) {
         $permissions = LANG_NO_PERMS;
     } else {
         $permissions = True;
@@ -344,11 +344,11 @@ require_once(FILEROOT . "/header.php");
                                     <p id="permissions-text" class="fw-bold">
                                         <?php if (is_bool($permissions)) : ?>
                                     <ul>
-                                        <?php while ($role_perm_result = mysqli_fetch_assoc($role_permissions)) : ?>
+                                        <?php foreach ($role_permissions as $role_perm_result) : ?>
                                             <li id="<?php echo $role_perm_result["permission_id"]; ?>" class="mb-1 fw-bolder">
                                                 <code><?php echo $role_perm_result["permission"]; ?></code>
                                             </li>
-                                        <?php endwhile; ?>
+                                        <?php endforeach; ?>
                                     </ul>
                                 <?php else : ?>
                                     <?php echo $permissions; ?>

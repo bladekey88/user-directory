@@ -257,8 +257,8 @@ function check_user_permission($permission)
 function check_user_role($role, $userid = null)
 {
     $user_id = isset($userid) ? $userid : $_SESSION["userid"];
-    $get_user_role = run_sql(get_user_role($user_id));
-    $result = mysqli_fetch_assoc($get_user_role);
+    $get_user_role = run_sql2(get_user_role($user_id));
+    $result = $get_user_role[0];
     if ($result) {
         return $result["role_name"] === strtoupper($role);
     }
@@ -385,12 +385,12 @@ function validate_client_certificate()
 }
 
 
-function get_certificate_information(): array|string
+function get_certificate_information(): array|bool
 {
     $userid = $_SESSION["userid"];
-    $get_cert_info = run_sql(get_user_certificate($userid));
-    $result = mysqli_fetch_assoc($get_cert_info);
-    if ($result) {
+    $get_cert_info = run_sql2(get_user_certificate($userid));
+    if ($get_cert_info) {
+        $result = [0];
         return $result;
     }
     return False;

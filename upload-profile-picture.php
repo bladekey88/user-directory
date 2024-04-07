@@ -71,15 +71,14 @@ if (move_uploaded_file($fileTmpName, $uploadDir . $newFileName)) {
         die();
     }
 
-    $checkImage = run_sql2(check_profile_picture_exists($_POST["idnumber"]));
-    $checked_image = $checkImage[0];
-    if (!$checked_image) {
+    $check_image_exists = run_sql2(check_profile_picture_exists($_POST["idnumber"]));
+    if (!$check_image_exists) {
         // No rows returned so need to insert
-        $insert_row = run_sql(insert_new_profile_picture($_POST["idnumber"], $imgPath));
+        $insert_row = run_sql2(insert_new_profile_picture($_POST["idnumber"], $imgPath));
     } else {
         //Update existing row in DB, then delete the old image from disk
-        $update_row = run_sql(update_profile_picture($_POST["idnumber"], $imgPath));
-        @unlink($checked_image["path"]);
+        $update_row = run_sql2(update_profile_picture($_POST["idnumber"], $imgPath));
+        @unlink($check_image_exists[0]["path"]);
     }
     // Return to use and inform them of completion
     echo json_encode(

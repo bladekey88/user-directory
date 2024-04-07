@@ -15,17 +15,18 @@ $vle_username = $_SESSION["username"];
 $idnumber = $_SESSION["idnumber"];
 $vle_account = false;
 
-$get_user_vle_info_query = run_sql(get_user_vle_info($vle_username, $idnumber), MOODLE_DB);
-$get_user_vle_cohort_query = run_sql(get_user_vle_cohort($vle_username, $idnumber), MOODLE_DB);
-$get_user_vle_enrolment_query = run_sql(get_user_vle_enrolments($vle_username, $idnumber), MOODLE_DB);
+// Use named parameters (i.e. function varaible: overide data to get this to work PHP 8+ only)
+$get_user_vle_info_query = run_sql2(get_user_vle_info($vle_username, $idnumber), database: MOODLE_DB);
+$get_user_vle_cohort_query = run_sql2(get_user_vle_cohort($vle_username, $idnumber), database: MOODLE_DB);
+$get_user_vle_enrolment_query = run_sql2(get_user_vle_enrolments($vle_username, $idnumber), database: MOODLE_DB);
 
 
-if ((mysqli_num_rows($get_user_vle_info_query) +
-    mysqli_num_rows($get_user_vle_cohort_query) +
-    mysqli_num_rows($get_user_vle_enrolment_query)
+if ((count($get_user_vle_info_query) +
+    count($get_user_vle_cohort_query) +
+    count($get_user_vle_enrolment_query)
 ) > 0) {
     $vle_account = true;
-    $vle_info =  mysqli_fetch_assoc($get_user_vle_info_query);
+    $vle_info = $get_user_vle_info_query[0];  //This should only ever return one result
 }
 
 require_once(FILEROOT . "/header.php");
@@ -141,7 +142,7 @@ require_once(FILEROOT . "/header.php");
                             </thead>
                             <tbody>
                                 <?php
-                                while ($row = mysqli_fetch_assoc($get_user_vle_cohort_query)) : ?>
+                                foreach ($get_user_vle_cohort_query as $row) : ?>
                                     <tr>
                                         <td><?php echo $row["cohort_name"]; ?></td>
                                         <td><?php echo $row["description"]; ?></td>
@@ -149,7 +150,7 @@ require_once(FILEROOT . "/header.php");
                                         <td><?php echo $row["cohort_scope"]; ?></td>
                                         <td><?php echo (!empty($row["category_name"])) ? $row["category_name"] : "N/A"; ?></td>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </section>
@@ -161,31 +162,26 @@ require_once(FILEROOT . "/header.php");
                         $showParentColumns = false; // Flag to determine if the parent-related columns should be shown
 
                         // Iterate through the dataset to check if any row has a non-empty categoryname
-                        while ($row = mysqli_fetch_assoc($get_user_vle_enrolment_query)) {
+                        foreach ($get_user_vle_enrolment_query  as $row) {
                             if (!empty($row["categoryname"])) {
                                 $showCategoryColumns = true;
                                 break;
                             }
                         }
-                        mysqli_data_seek($get_user_vle_enrolment_query, 0); // Reset the result pointer
-                        while ($row = mysqli_fetch_assoc($get_user_vle_enrolment_query)) {
+                        foreach ($get_user_vle_enrolment_query  as $row) {
                             if (!empty($row["coursename"])) {
                                 $showCourseColumns = true;
                                 break;
                             }
                         }
-                        mysqli_data_seek($get_user_vle_enrolment_query, 0); // Reset the result pointer
                         // Iterate through the dataset to check if any row has a non-empty categoryname
-                        while ($row = mysqli_fetch_assoc($get_user_vle_enrolment_query)) {
+                        foreach ($get_user_vle_enrolment_query  as $row) {
                             if (!empty($row["parent_child_username"])) {
                                 $showParentColumns = true;
                                 break;
                             }
                         }
-                        mysqli_data_seek($get_user_vle_enrolment_query, 0); // Reset the result pointer
                         ?>
-
-
                         <table class="table-responsive styled-table mt-3" id="vle-enrolments-table" name="vle-enrolments-table" style="width:100%;">
                             <thead>
                                 <tr>
@@ -219,7 +215,7 @@ require_once(FILEROOT . "/header.php");
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while ($row = mysqli_fetch_assoc($get_user_vle_enrolment_query)) : ?>
+                                <?php foreach ($get_user_vle_enrolment_query  as $row) : ?>
                                     <tr>
                                         <td><?php echo $row["role"]; ?></td>
                                         <td><?php echo $row["context"]; ?></td>
@@ -238,7 +234,7 @@ require_once(FILEROOT . "/header.php");
                                             <td><?php echo $row["child_name"]; ?></td>
                                         <?php endif; ?>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </section>
@@ -264,6 +260,5 @@ require_once(FILEROOT . "/header.php");
         </div>
     </div>
 </main>
-
 
 <?php require_once(FILEROOT . "/footer.php"); ?>

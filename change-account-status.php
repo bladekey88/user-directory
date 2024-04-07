@@ -31,7 +31,7 @@ else if (!isValidAction($action)) {
     //No errors so proceed;
     $username = sanitise_user_input($_GET["user"], $type = "username");
     $action = sanitise_user_input($action);
-    $toggle_lock_status = run_sql(toggle_user_lock_status($username, $action));
+    $toggle_lock_status = run_sql2(toggle_user_lock_status($username, $action));
     echo json_encode(
         array(
             "message" => "Account has been updated successfully",

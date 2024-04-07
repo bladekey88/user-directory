@@ -4,8 +4,8 @@ require_once(__DIR__ . "/config/auth.php");
 //Local Functions
 function user_exists($username, $email)
 {
-    return mysqli_num_rows(run_sql(get_attribute_exists("username", $username))) ||
-        mysqli_num_rows(run_sql(get_attribute_exists("email", $email)));
+    return mysqli_num_rows(run_sql2(get_attribute_exists("username", $username))) ||
+        mysqli_num_rows(run_sql2(get_attribute_exists("email", $email)));
 }
 
 function handle_error($error)
