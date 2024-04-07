@@ -56,7 +56,7 @@ if ($user) {
 //Get user role and permission details for displayed user
 // Get role details first
 $user_role_query = run_sql2(get_user_role($user["userid"]));
-$user_role_result = $user_role_query[0];
+$user_role_result = $user_role_query[0] ?? null;
 if ($user_role_result) {
     $role = ucwords(strtolower(sanitise_user_input($user_role_result["role_name"])));
 } else {
