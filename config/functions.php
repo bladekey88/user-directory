@@ -61,6 +61,8 @@ class DatabaseConnection
         }
     }
 
+    ## TODO update function to handle complex where logic
+    ## ALSO CHANGE DELETE FUNCTION TOO
     public function update($table, $data, $where)
     // Constructs and executes the UPDATE SQL query with named placeholders
     {
