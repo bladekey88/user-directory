@@ -1,11 +1,14 @@
 <?php
+##TODO convert to add user function
+## ALSO TODO convert to parameterised SQL/PREPARED STATEMENT
+
 require_once(__DIR__ . "/config/auth.php");
 
 //Local Functions
 function user_exists($username, $email)
 {
-    return mysqli_num_rows(run_sql2(get_attribute_exists("username", $username))) ||
-        mysqli_num_rows(run_sql2(get_attribute_exists("email", $email)));
+    return count(run_sql2(get_attribute_exists("username", $username))) ||
+        count(run_sql2(get_attribute_exists("email", $email)));
 }
 
 function handle_error($error)
@@ -124,7 +127,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Insert data into the database (replace "users" with your actual table name)
     $sql = "INSERT INTO users (username, email, password, firstname, middlename, lastname, commonname, house, year, idnumber, locked) 
             VALUES ('$username', '$email', '$hashed_password', '$firstname','$middlename', '$lastname', '$commonname', '$house', '$year', '$idnumber', '$locked')";
-
     if ($conn->query($sql) === TRUE) {
         echo json_encode("User added successfully");
     } else {
