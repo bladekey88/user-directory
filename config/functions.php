@@ -256,7 +256,7 @@ class LDAPConnection
 function check_user_permission($permission)
 {
     $get_user_permissions = run_sql2(get_user_permissions($_SESSION["userid"]));
-    $result = $get_user_permissions[0];
+    $result = $get_user_permissions[0] ?? null;
     if ($result) {
         return $result["bitmask"] & $permission;
     }
@@ -421,7 +421,7 @@ function get_certificate_information(): array|bool
     $userid = $_SESSION["userid"];
     $get_cert_info = run_sql2(get_user_certificate($userid));
     if ($get_cert_info) {
-        $result = [0];
+        $result = $get_cert_info[0];
         return $result;
     }
     return False;
