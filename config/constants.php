@@ -59,6 +59,7 @@ define('ROLE_ADMIN', 'ADMINISTRATOR');
 define('ROLE_STAFF', 'STAFF');
 define('ROLE_STUDENT', 'STUDENT');
 define('ROLE_PARENT', 'PARENT');
+define('ROLE_NONE', 'NONE');
 
 // Language Constants
 define('LANG_NO_ROLES', 'No Role Defined');

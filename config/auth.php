@@ -21,18 +21,14 @@ if ($_SESSION["login_method"] == "CLIENT_CERTIFICATE" && $_SESSION["username"] !
     redirect(LOGIN_URL, $header);
 }
 
-if (!isset($_SESSION["role"])) : ?>
+
+if (!isset($_SESSION["role"]) || strtoupper($_SESSION["role"]) == ROLE_NONE) : ?>
     <?php require_once(FILEROOT . "/header.php"); ?>
-    <!-- <div class="alert alert-danger text-center mb-0 rounded-0"> -->
-    <div class="alert alert-danger bg-danger text-center text-white border-0 rounded-0 h6 p-0 px-5 py-1 mb-0">
-        <h6 class="pt-2 fw-semibold">
-            Your account has not been setup correctly. Please contact IT Services for further assistance.
+    <div class="alert alert-danger bg-danger text-center text-white border-0 border-4 border-top border-bottom border-black rounded-0 p-0 mb-0 mt-0">
+        <h6 class="pt-2 fw-lighter">
+            Your account has not been setup correctly - contact IT Services for further assistance.
         </h6>
-        <p class="fw-lighter mb-2 fst-italic">
-            Reason: User Role has not been defined for <?php echo $_SESSION["username"]; ?>
-        </p>
+        <pre class="fw-lighter">Reason: Role has not been defined or is set to 'None' for: <?php echo $_SESSION["username"]; ?> (<?php echo $_SESSION["idnumber"]; ?>)</pre>
     </div>
-    <p>
-    </p>
     <?php require_once(FILEROOT . "/footer.php"); ?>
 <?php endif; ?>
