@@ -101,10 +101,18 @@ class DatabaseConnection
 
 
 
-
+/**
+ * @deprecated This class is deprecated and will be removed in future versions.
+ *             Please use the DatabaseConnection instead.
+ */
 class MysqlConnection
 {
     var $connection = false;
+
+    public function __construct()
+    {
+        trigger_error('MysqlConnection is deprecated and will be removed in future versions. Please use the DatabaseConnection class instead.', E_USER_DEPRECATED);
+    }
 
     public function connect($db_hostname = null, $db_username = null, $db_password = null, $db_database = null)
     {
@@ -311,6 +319,12 @@ function sanitise_user_input($input, $type = 'text')
             break;
     }
     return $input;
+}
+
+function user_exists($username, $email)
+{
+    return count(run_sql2(get_attribute_exists("username", $username))) ||
+        count(run_sql2(get_attribute_exists("email", $email)));
 }
 
 
