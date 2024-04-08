@@ -5,11 +5,6 @@
 require_once(__DIR__ . "/config/auth.php");
 
 //Local Functions
-function user_exists($username, $email)
-{
-    return count(run_sql2(get_attribute_exists("username", $username))) ||
-        count(run_sql2(get_attribute_exists("email", $email)));
-}
 
 function handle_error($error)
 {
