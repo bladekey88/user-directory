@@ -321,10 +321,25 @@ function sanitise_user_input($input, $type = 'text')
     return $input;
 }
 
-function user_exists($username, $email)
+function user_exists(string $username, string $email): bool
 {
     return count(run_sql2(get_attribute_exists("username", $username))) ||
         count(run_sql2(get_attribute_exists("email", $email)));
+}
+
+/**
+ * Generates a unique user IDNumber. If the generated IDNumber exists, re-run the function
+ *
+ * @return string The generated user IDNumber.
+ */
+function generate_user_idnumber(): string
+{
+    $idnumber = str_pad(random_int(1000000, 1000000000), 10, "0", STR_PAD_LEFT);
+    // Check if IDNumber exists, and if so regenerate
+    if (run_sql2(get_attribute_exists("idnumber", $idnumber))) {
+        return generate_user_idnumber(); // Corrected recursive call
+    }
+    return $idnumber;
 }
 
 
@@ -441,6 +456,5 @@ function redirect(string $url, string $custom_header = null)
     header("Location: $new_url");
     exit();
 }
-
 
 require_once(FILEROOT . "/config/sql.php");
