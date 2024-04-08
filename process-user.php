@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if the required fields are set
     $required_fields = ["username", "email", "password", "confirm-password", "firstname", "lastname", "house", "year"];
     foreach ($required_fields as $field) {
-        if (!isset($_POST[$field]) || strlen($_POST[$field] == 0)) {
+        if (!isset($_POST[$field]) || strlen($_POST[$field]) == 0) {
             array_push($error, "<span class='fw-bolder'>$field</span> is not set or has no value");
         }
     }
