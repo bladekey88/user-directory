@@ -38,6 +38,35 @@ function get_specific_user(string $username, bool $exclude_hidden = true)
     return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
 
+function insert_new_user(
+    string $username,
+    string $email,
+    string $hashed_password,
+    string $firstname,
+    string $lastname,
+    ?string $middlename = null,
+    ?string $commonname = null,
+    string $house,
+    string $year,
+    string $idnumber
+) {
+    $table = "users";
+    $data =  [
+        'username' => $username,
+        'email' => $email,
+        'password' => $hashed_password,
+        'firstname' => $firstname,
+        'middlename' => $middlename,
+        'lastname' => $lastname,
+        'commonname' => $commonname,
+        'house' => $house,
+        'year' => $year,
+        'idnumber' => $idnumber,
+    ];
+    return ['operation' => INSERT, 'table' => $table, 'data' => $data];
+}
+
+
 function check_profile_picture_exists(string $idnumber)
 {
     $sql = "SELECT idnumber,path
@@ -324,6 +353,6 @@ function run_sql2(
             }
         }
     } catch (Exception $e) {
-        echo "An error occured: '" . $e->getMessage() . "'";
+        throw new Exception("An error occured: '" . $e->getMessage() . "'");
     }
 }
