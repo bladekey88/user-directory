@@ -126,7 +126,7 @@ if (!isset($title)) {
                     <div class="container">
                         <p class="mb-0">
                             A valid client certificate was presented to this site for this account, enabling automatic login.
-                            You can also disable certificate login for this account from your <a class="link-offset-1" href="profile.php#certificates">profile page.</a>
+                            You can also disable certificate login for this account from your <a class="link-offset-1" href="<?php echo WEBROOT; ?>/profile.php#certificates">profile page.</a>
                         </p>
                     </div>
                 </div>
