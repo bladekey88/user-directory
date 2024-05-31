@@ -10,5 +10,6 @@ vendor/
 # Ignore during development
 *send-email.php
 
-# Ignore test files
+# Ignore test and special files
 test_*
+statute.php
