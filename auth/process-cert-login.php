@@ -42,7 +42,7 @@ if ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
 ########################################################
 function authenticateWithClientCertificate($conn, $username, $email)
 {
-    $sql = "SELECT t1.userid, t1.username, t1.email,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
+    $sql = "SELECT t1.userid, t1.username, t1.email,t1.firstname,t1.lastname,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
     FROM users t1
     LEFT JOIN user_role t2 ON t1.userid = t2.user_id
     LEFT JOIN roles t3 ON t2.role_id = t3.role_id
@@ -98,6 +98,8 @@ function storeUserInfoInSession($row)
     $_SESSION['userid'] = $row['userid'];
     $_SESSION['idnumber'] = $row['idnumber'];
     $_SESSION['username'] = $row['username'];
+    $_SESSION['firstname'] = $row['firstname'];
+    $_SESSION['lastname'] = $row['lastname'];
     $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
     $_SESSION["role"] = $row["role_name"];
     $_SESSION["email"] = $row["email"];

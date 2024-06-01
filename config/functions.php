@@ -270,7 +270,7 @@ function check_user_role($role, $userid = null)
     $get_user_role = run_sql2(get_user_role($user_id));
     $result = $get_user_role[0];
     if ($result) {
-        return $result["role_name"] === strtoupper($role);
+        return strtoupper($result["role_name"]) === strtoupper($role);
     }
     return False;
 }

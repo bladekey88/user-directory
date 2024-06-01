@@ -73,14 +73,27 @@ require_once(FILEROOT . "/header.php");
 <main>
     <div class="container-xl px-4 mt-4">
         <nav class="nav nav-borders">
-            <h4 class="m-0"><?php echo $_SESSION["name"]; ?></h4>
+            <h4 class="m-0"><?php echo $_SESSION["firstname"] . " " . $_SESSION["lastname"]; ?></h4>
         </nav>
         <hr class="mt-0 mb-4">
+
+        <?php
+        if (isset($vle_info) &&  $vle_info["suspended"] == "true") : ?>
+            <div class="alert alert-danger h6 fw-bolder rounded-0 shadow-0 border-2 border-danger">
+                <h6 class="fw-bolder mb-0">
+                    <i class="bi bi-exclamation-octagon-fill"></i>
+                    VLE Account Suspended -
+                    <span class="fw-normal">Your will not be able to login in to any VLE services. Please contact ITServices for further details.</span>
+                </h6>
+            </div>
+        <?php endif; ?>
+
         <div class="card">
             <div class="card-header text-bg-primary rounded-0">HogwartsVLE Account Details</div>
             <div class="card-body">
                 <?php if ($vle_account) :
                     echo "<h6>You have access as <mark class='fw-bolder'>$vle_username</mark> to HogwartsVLE</h6>"; ?>
+                    <a class="mt-3 d-block" target="_blank" rel="external noreferrer" href="/vle">Visit VLE (Opens in a new tab)</a>
                     <hr>
                     <section name="vle-info" id="vle-info">
                         <h5>VLE Information</h5>

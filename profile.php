@@ -232,12 +232,9 @@ require_once(FILEROOT . "/header.php");
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab" aria-controls="permissions" aria-selected="false">Roles and Permissions</button>
                         </li>
-                        <?php
-                        if (!check_user_permission(PERMISSION_EXTERNAL_USER)) : ?>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="school-info-tab" data-bs-toggle="tab" data-bs-target="#school-info" type="button" role="tab" aria-controls="school-info" aria-selected="false">School Information</button>
-                            </li>
-                        <?php endif; ?>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="school-info-tab" data-bs-toggle="tab" data-bs-target="#school-info" type="button" role="tab" aria-controls="school-info" aria-selected="false">School Information</button>
+                        </li>
                         <?php if ((check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && $username == $_SESSION["username"]) || check_user_permission(PERMISSION_EDIT_ANY_PROFILE)) : ?>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="ldap-info-tab" data-bs-toggle="tab" data-bs-target="#ldap-info" type="button" role="tab" aria-controls="ldap-info" aria-selected="false">LDAP Information</button>
@@ -357,34 +354,33 @@ require_once(FILEROOT . "/header.php");
                                 </div>
                             </div>
                         </div>
-                        <?php if (!check_user_permission(PERMISSION_EXTERNAL_USER)) : ?>
-                            <div class="tab-pane fade show active" id="school-info" role="tabpanel" aria-labelledby="school-info-tab" tabindex="0">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <p class="my-0">School Information</p>
-                                </div>
-                                <div id="account-school-info" class="card-body ms-4">
-                                    <div class="d-flex justify-content-around align-items-flex-start flex-column">
-                                        <div>
-                                            <label class="small mb-1" for="inputHouse">House</label>
-                                            <p id="inputHouse" data-editable="false" class="fw-bold"><?php echo $user["house"]; ?></p>
-                                        </div>
-                                        <div>
-                                            <label class="small mb-1" for="inputYear">Year</label>
-                                            <p id="inputYear" data-editable="false" class="fw-bold"><?php echo $user["year"]; ?></p>
-                                        </div>
-                                        <?php if ($quidditch) : ?>
-                                            <div>
-                                                <label class="small mb-1" for="inputTeam">Quidditch Team</label>
-                                                <p id="inputTeam" data-editable="false" class="fw-bold">Team Member</p>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($_SESSION["username"] == $user["username"]) : ?>
-                                            <a href="<?php echo WEBROOT . "/vle.php"; ?>">View VLE Information</a>
-                                        <?php endif; ?>
+
+                        <div class="tab-pane fade show active" id="school-info" role="tabpanel" aria-labelledby="school-info-tab" tabindex="0">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <p class="my-0">School Information</p>
+                            </div>
+                            <div id="account-school-info" class="card-body ms-4">
+                                <div class="d-flex justify-content-around align-items-flex-start flex-column">
+                                    <div>
+                                        <label class="small mb-1" for="inputHouse">House</label>
+                                        <p id="inputHouse" data-editable="false" class="fw-bold"><?php echo $user["house"]; ?></p>
                                     </div>
+                                    <div>
+                                        <label class="small mb-1" for="inputYear">Year</label>
+                                        <p id="inputYear" data-editable="false" class="fw-bold"><?php echo $user["year"]; ?></p>
+                                    </div>
+                                    <?php if ($quidditch) : ?>
+                                        <div>
+                                            <label class="small mb-1" for="inputTeam">Quidditch Team</label>
+                                            <p id="inputTeam" data-editable="false" class="fw-bold">Team Member</p>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if ($_SESSION["username"] == $user["username"]) : ?>
+                                        <a href="<?php echo WEBROOT . "/vle.php"; ?>">View VLE Information</a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                        <?php endif; ?>
+                        </div>
                         <div class="tab-pane fade show active" id="ldap-info" role="tabpanel" aria-labelledby="ldap-info-tab" tabindex="0">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <p class="my-0">Information held by Hogwarts Authentication Directory Service (HADS)</p>

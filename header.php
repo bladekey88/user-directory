@@ -95,28 +95,31 @@ if (!isset($title)) {
                                     <p>Home</p>
                                 </a>
                             </li>
-                            <li>
-                                <a href="#" class=" disabled nav-link text-white">
-                                    <i class="bi bi-grid text-secondary"></i>
-                                    <p class="text-secondary">Systems</p>
-                                </a>
-                            </li>
-                            <li>
+                            <?php
+                            if (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF)) : ?>
+                                <li>
+                                    <a href="<?php echo WEBROOT; ?>/statute.php" class="nav-link text-white">
+                                        <i class="bi bi-grid"></i>
+                                        <p>Statute</p>
+                                    </a>
+                                </li>
+                                <li>
+                                <?php endif; ?>
                                 <a href="<?php echo WEBROOT; ?>/profile.php" class="nav-link text-white">
                                     <i class="bi bi-person-circle"></i>
                                     <p>
                                         <?php echo $_SESSION["name"]; ?>
                                     </p>
                                 </a>
-                            </li>
-                            <li>
-                                <!-- <button type="button" role="link" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger"> -->
-                                <!-- <a role="button" href="/directory/logout.php" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger nav-link text-white nohover"> -->
-                                <a href="<?php echo WEBROOT; ?>/logout.php" class="btn btn-danger nohover border-2 rounded-0 mt-4 ms-3">
-                                    Logout
-                                </a>
-                                <!-- </button> -->
-                            </li>
+                                </li>
+                                <li>
+                                    <!-- <button type="button" role="link" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger"> -->
+                                    <!-- <a role="button" href="/directory/logout.php" class="ms-2 mt-3 rounded-0 btn btn-sm btn-outline-danger nav-link text-white nohover"> -->
+                                    <a href="<?php echo WEBROOT; ?>/logout.php" class="btn btn-danger nohover border-2 rounded-0 mt-4 ms-3">
+                                        Logout
+                                    </a>
+                                    <!-- </button> -->
+                                </li>
                         </ul>
                     </div>
                 </div>

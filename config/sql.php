@@ -184,6 +184,7 @@ function get_user_vle_info(string $username, string $idnumber)
         u.middlename,
         u.lastname,
         u.alternatename AS 'common_name',
+        u.lastaccess,
         -- Pivoting data from mdl_user_info_data table for specific fields
         -- Using MAX and CASE to handle multiple values for each user
         MAX(CASE WHEN uid.fieldid = 1 THEN uid.data END) AS house,
