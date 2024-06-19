@@ -18,10 +18,12 @@ $users = run_sql2(get_all_users());
     <div class="container px-4 mt-4">
         <nav class="d-flex align-items-center justify-content-between">
             <h4 class="m-0">User List</h4>
-            <a id="btnaddnewuser" role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0 mb-1" href="/directory/add-user.php">
-                <i class="bi bi-user-add"></i>
-                Add New User
-            </a>
+            <?php if (check_user_permission(PERMISSION_ADD_USER)) : ?>
+                <a id="btnaddnewuser" role="button" class="btn btn-sm btn-outline-primary border-2 rounded-0 mb-1" href="/directory/add-user.php">
+                    <i class="bi bi-user-add"></i>
+                    Add New User
+                </a>
+            <?php endif; ?>
         </nav>
         <hr class="mt-0 mb-4">
         <?php
