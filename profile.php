@@ -465,9 +465,11 @@ require_once(FILEROOT . "/header.php");
                                                     <li>Valid to: <?php echo date("Y-m-d", strtotime($_SERVER["SSL_CLIENT_V_END"])); ?></li>
                                                 </ul>
                                                 <div class="d-flex gap-2">
-                                                    <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0 disabled">
-                                                        Enrol Detected Certificate
-                                                    </button>
+                                                    <?php if (!$cert_info || ($cert_info["certificate_cn"] <> $_SERVER["SSL_CLIENT_S_DN_CN"] || $cert_info["certificate_serial"] <> $_SERVER["SSL_CLIENT_M_SERIAL"])) : ?>
+                                                        <button id="enrol-certificate" type="button" class="ms-3 mb-3 btn btn-primary rounded-0 disabled">
+                                                            Enrol Detected Certificate
+                                                        </button>
+                                                    <?php endif; ?>
                                                     <noscript>
                                                         <div class="alert alert-warning border-danger text-danger rounded-0 p-3 py-2 ps-2 border-3" role="alert">
                                                             Functionality disabled as javascript is required
