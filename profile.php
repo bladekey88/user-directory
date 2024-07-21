@@ -28,7 +28,7 @@ if ($user) {
     $user = $user[0];
     // Handle Optional Fields (display only)
     if (strlen($user["middlename"]) == 0) {
-        $middlename = htmlentities("No Value");
+        $middlename = htmlentities("");
     } else {
         $middlename = $user["middlename"];
     }
