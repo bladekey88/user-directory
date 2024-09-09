@@ -11,9 +11,25 @@ if (!check_user_permission(PERMISSION_VIEW_USER)) {
 // Set up
 $error = [];
 $message = [];
-$vle_username = $_SESSION["username"];
-$idnumber = $_SESSION["idnumber"];
+if (isset($_GET["username"]) && check_user_permission(PERMISSION_VIEW_ALL_USERS)) {
+    $vle_username = htmlentities($_GET["username"]);
+    $idnumber = htmlentities($_GET["idnumber"]);
+} else {
+    $vle_username = $_SESSION["username"];
+    $idnumber = $_SESSION["idnumber"];
+}
 $vle_account = false;
+$account_exist = true;
+
+// Check the user exists
+$username_exists = run_sql2(get_attribute_exists("username", $vle_username));
+$idnumber_exists = run_sql2(get_attribute_exists("idnumber", $idnumber));
+
+if (!$username_exists || !$idnumber_exists) {
+    $account_exist = false;
+}
+
+
 
 // Use named parameters (i.e. function varaible: overide data to get this to work PHP 8+ only)
 $get_user_vle_info_query = run_sql2(get_user_vle_info($vle_username, $idnumber), database: MOODLE_DB);
@@ -73,10 +89,35 @@ require_once(FILEROOT . "/header.php");
 <main>
     <div class="container-xl px-4 mt-4">
         <nav class="nav nav-borders">
-            <h4 class="m-0"><?php echo $_SESSION["firstname"] . " " . $_SESSION["lastname"]; ?></h4>
+            <?php if (isset($vle_info)): ?>
+                <h4 class="m-0">VLE Account Details for <?php echo $vle_info["firstname"] . " " . $vle_info["lastname"]; ?></h4>
+            <?php else: ?>
+                <h4 class="m-0"><?php echo $_SESSION["firstname"] . " " . $_SESSION["lastname"]; ?></h4>
+            <?php endif; ?>
         </nav>
         <hr class="mt-0 mb-4">
 
+        <?php
+        if (!$account_exist) : ?>
+            <div class="alert alert-danger h6 fw-bolder rounded-0 shadow-0 border-2 border-dark">
+                <h5 class="fw-bolder mb-0 text-center">
+                    User not found<br><br>
+                    <span class="fw-normal">The details provided do not match any known user - <?php echo " username: <strong>$vle_username</strong> and idnumber: <strong>$idnumber</strong>." ?> </span>
+                </h5>
+            </div>
+        <?php die();
+        endif; ?>
+
+        <?php
+        if (isset($_GET["username"]) && ($vle_username <> $_SESSION["username"]) && check_user_permission(PERMISSION_VIEW_ALL_USERS)) : ?>
+            <div class="alert alert-warning h6 fw-bolder rounded-0 shadow-0 border-2 border-light">
+                <h6 class="fw-bolder mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Viewing user's account -
+                    <span class="fw-normal">You are viewing the details of another user's VLE account, however the verbiage referring to you, indcates that user and not youself.</span>
+                </h6>
+            </div>
+        <?php endif; ?>
         <?php
         if (isset($vle_info) &&  $vle_info["suspended"] == "true") : ?>
             <div class="alert alert-danger h6 fw-bolder rounded-0 shadow-0 border-2 border-danger">

@@ -296,7 +296,7 @@ require_once(FILEROOT . "/header.php");
                                     <!-- Form Group (Middle)-->
                                     <div class="col-md-6">
                                         <label class="small mb-1" for="inputMiddleName">Middle Name</label>
-                                        <p id="inputMiddleName" data-editable="true" class="fw-bold"><?php echo $middlename; ?></p>
+                                        <p id="inputMiddleName" placeholder="Middle Name (Optional)" data-editable="true" class="fw-bold"><?php echo $middlename; ?></p>
                                     </div>
                                 </div>
                                 <!-- Form Row-->
@@ -377,6 +377,8 @@ require_once(FILEROOT . "/header.php");
                                     <?php endif; ?>
                                     <?php if ($_SESSION["username"] == $user["username"]) : ?>
                                         <a href="<?php echo WEBROOT . "/vle.php"; ?>">View VLE Information</a>
+                                    <?php else: ?>
+                                        <a href="<?php echo WEBROOT . "/vle.php?username=" . $user["username"] . "&idnumber=" . $user["idnumber"]; ?>">View VLE Information</a>
                                     <?php endif; ?>
                                 </div>
                             </div>
