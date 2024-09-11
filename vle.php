@@ -91,6 +91,8 @@ require_once(FILEROOT . "/header.php");
         <nav class="nav nav-borders">
             <?php if (isset($vle_info)): ?>
                 <h4 class="m-0">VLE Account Details for <?php echo $vle_info["firstname"] . " " . $vle_info["lastname"]; ?></h4>
+            <?php elseif (isset($_GET["username"])): ?>
+                <h4 class="m-0">VLE Account Details for <?php echo $_GET["username"]; ?></h4>
             <?php else: ?>
                 <h4 class="m-0"><?php echo $_SESSION["firstname"] . " " . $_SESSION["lastname"]; ?></h4>
             <?php endif; ?>
@@ -110,7 +112,7 @@ require_once(FILEROOT . "/header.php");
 
         <?php
         if (isset($_GET["username"]) && ($vle_username <> $_SESSION["username"]) && check_user_permission(PERMISSION_VIEW_ALL_USERS)) : ?>
-            <div class="alert alert-warning h6 fw-bolder rounded-0 shadow-0 border-2 border-light">
+            <div class="alert alert-warning h6 fw-bolder rounded-0 shadow-lg border-2 border-light">
                 <h6 class="fw-bolder mb-0">
                     <i class="bi bi-info-circle-fill"></i>
                     Viewing user's account -
@@ -305,7 +307,10 @@ require_once(FILEROOT . "/header.php");
                         </p>
 
                         <div class="bg-white p-3 border border-1 border-dark mb-1">
-                            <div class="text-center h6 fw-bold text-black">Account will be automatically created at login - no request needed</div>
+                            <div class="text-center h6 fw-bold text-black">
+                                Account will be automatically created at login - no request needed
+                                <p class="mt-2 mb-0"><a href="/vle" target="_blank" class="href">Click here to go to VLE</a>
+                            </div>
                         </div>
                     </div>
 
