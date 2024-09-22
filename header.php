@@ -96,7 +96,7 @@ if (!isset($title)) {
                                 </a>
                             </li>
                             <?php
-                            if (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF)) : ?>
+                            if (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF) || check_user_role(ROLE_SENIOR_STAFF)) : ?>
                                 <li>
                                     <a href="<?php echo WEBROOT; ?>/statute.php" class="nav-link text-white">
                                         <i class="bi bi-grid"></i>

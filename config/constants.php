@@ -56,6 +56,7 @@ define('PERMISSION_EXTERNAL_USER', 2048);
 
 // User Role Constants
 define('ROLE_ADMIN', 'ADMINISTRATOR');
+define('ROLE_SENIOR_STAFF', 'SENIOR STAFF');
 define('ROLE_STAFF', 'STAFF');
 define('ROLE_STUDENT', 'STUDENT');
 define('ROLE_PARENT', 'PARENT');

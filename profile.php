@@ -150,7 +150,6 @@ require_once(FILEROOT . "/header.php");
         color: rgb(33, 37, 41);
     }
 </style>
-
 <main>
     <div class="container-xl px-4 mt-4">
         <noscript>
@@ -339,33 +338,34 @@ require_once(FILEROOT . "/header.php");
                                 <div class="mb-2 border-bottom">
                                     <label class="small mb-1" for="role">Role</label>
                                     <p id="role" class="fw-bold"><?php echo $role; ?>
-                                        <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF))): ?>
+                                        <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF))): ?>
                                             <button class="btn btn-sm p-0" id="toggleUserRoleForm">
                                                 <i style="color:blue; font-size:1rem;" class="bi bi-pencil fw-bold mx-0"></i>
                                             </button>
                                         <?php endif; ?>
                                     </p>
-
-                                    <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF))): ?>
+                                    <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF))): ?>
 
                                         <form style="display:none;" class="fade alert rounded-0 bg-warning-subtle form border border-1 border-danger shadow-sm py-2 px-3 mb-2" id="userRoleForm">
                                             <!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close Change User Role Form"></button> -->
-
-                                            <div class="d-grid gap-2">
-                                                <label class="form-label p-0 fw-bolder" for="userRoleForm">Change User's Role</label>
-                                                <p class="mb-1"> Changing a user's role will grant them any permissions associated to that role. This will change their data visibiliy and access.</p>
-                                                <p class="m-0"><em>Please ensure you are aware of the changes and are authorised to make such changes. </em></p>
-                                                <input type="hidden" name="userID" value="<?php echo $user['userid']; ?>">
-                                                <label class=" form-label p-0 m-0" for="userRoles">Select New User Role:</label>
-                                                <select name="userRole" id="userRoles" class="rounded-0 border border-secondary border-1 form-control-sm">
-                                                    <option value="0" disabled <?php echo ($role == "None") ? 'selected' : ''; ?>>None</option>
-                                                    <option value="1" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option>
-                                                    <option value="2" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option>
-                                                    <option value="3" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
-                                                    <option value="4" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
-                                                </select>
-                                                <button type="submit" class="btn btn-danger rounded-0 btn-sm">Update Role</button>
-                                            </div>
+                                            <fieldset>
+                                                <div class="d-grid gap-2">
+                                                    <label class="form-label p-0 fw-bolder" for="userRoleForm">Change User's Role</label>
+                                                    <p class="mb-1"> Changing a user's role will grant them any permissions associated to that role. This will change their data visibiliy and access.</p>
+                                                    <p class="m-0"><em>Please ensure you are aware of the changes and are authorised to make such changes. </em></p>
+                                                    <input type="hidden" name="userID" value="<?php echo $user['userid']; ?>">
+                                                    <label class=" form-label p-0 m-0" for="userRoles">Select New User Role:</label>
+                                                    <select name="userRole" id="userRoles" class="rounded-0 border border-secondary border-1 form-control-sm">
+                                                        <option value="0" disabled <?php echo ($role == "None") ? 'selected' : ''; ?>>None</option>
+                                                        <option value="1" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option>
+                                                        <option value="5" <?php echo ($role == "Senior Staff") ? 'selected' : ''; ?>>Senior Staff</option>
+                                                        <option value="2" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option>
+                                                        <option value="3" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
+                                                        <option value="4" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-danger rounded-0 btn-sm">Update Role</button>
+                                                </div>
+                                            </fieldset>
                                         </form>
                                         <div id="roleUpdateStatus"></div>
 
@@ -724,6 +724,8 @@ require_once(FILEROOT . "/header.php");
 
     function changeUserRole() {
         const form = document.getElementById('userRoleForm');
+        const fieldsetByIndex = form.elements[0];
+
         if (!form) {
             return false;
         }
@@ -741,7 +743,7 @@ require_once(FILEROOT . "/header.php");
                     document.getElementById('roleUpdateStatus').className = "";
                     document.getElementById('roleUpdateStatus').classList.add("text-left", "rounded-0", "py-2", "mt-2", "alert", "alert-success", "border", "border-success");
                     statusElement.innerHTML = `<h6 class='fw-bold pt-1 mb-0'><i class="h5 bi bi-info-circle-fill mx-2"></i>${response.message}</h6>`;
-                    form.hidden = true;
+                    fieldsetByIndex.disabled = true;
                 } else {
                     const statusElement = document.getElementById('roleUpdateStatus');
                     document.getElementById('roleUpdateStatus').className = "";
