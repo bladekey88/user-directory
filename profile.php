@@ -201,7 +201,7 @@ require_once(FILEROOT . "/header.php");
                         <!-- Profile picture image-->
                         <img class="img-account-profile rounded-circle mb-2" src="<?php echo $profile_image; ?>" alt="Profile photo">
                         <!-- Profile picture upload button-->
-                        <?php if (($username == $_SESSION["username"] && check_user_permission(PERMISSION_EDIT_OWN_PROFILE)) || (check_user_role(ROLE_ADMIN) && check_user_permission(PERMISSION_EDIT_ANY_PROFILE))) : ?>
+                        <?php if (($username == $_SESSION["username"] && check_user_permission(PERMISSION_EDIT_OWN_PROFILE)) || ((check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF)) && check_user_permission(PERMISSION_EDIT_ANY_PROFILE))) : ?>
                             <noscript>
                                 <div class="alert alert-warning border-danger border-2 m-0 p-0 rounded-0 " role="alert">
                                     <p class="small p-0 m-0 ps-1">
