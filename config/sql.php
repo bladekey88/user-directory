@@ -91,6 +91,14 @@ function update_profile_picture(string $idnumber, string $path)
     return ['operation' => UPDATE, 'table' => $table, 'data' => $data, 'where' => $where];
 }
 
+function update_user_role(string $userid, string $roleid)
+{
+    $table = "user_role";
+    $data = ['role_id' => $roleid];
+    $where = ['user_id' => $userid];
+    return ['operation' => UPDATE, 'table' => $table, 'data' => $data, 'where' => $where];
+}
+
 function toggle_user_lock_status(string $username, $action)
 {
     $lock_value = (strtolower($action) == "lock") ? 1 : 0;

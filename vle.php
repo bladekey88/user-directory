@@ -112,11 +112,11 @@ require_once(FILEROOT . "/header.php");
 
         <?php
         if (isset($_GET["username"]) && ($vle_username <> $_SESSION["username"]) && check_user_permission(PERMISSION_VIEW_ALL_USERS)) : ?>
-            <div class="alert alert-warning h6 fw-bolder rounded-0 shadow-lg border-2 border-light">
+            <div class="alert alert-warning h6 fw-bolder rounded-0 shadow-lg border-2 border-dark">
                 <h6 class="fw-bolder mb-0">
                     <i class="bi bi-info-circle-fill"></i>
-                    Viewing user's account -
-                    <span class="fw-normal">You are viewing the details of another user's VLE account, however the verbiage referring to you, indcates that user and not youself.</span>
+                    Note -
+                    <span class="fw-normal">You are viewing the details of another user's VLE account. Any verbiage referring to you, indcates that user and not yourself.</span>
                 </h6>
             </div>
         <?php endif; ?>

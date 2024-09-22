@@ -186,7 +186,11 @@ require_once(FILEROOT . "/header.php");
         <?php endif; ?>
         <!-- Account page navigation-->
         <nav class="nav nav-borders">
-            <h4 class="m-0"><?php echo $user["firstname"] . " " . $user["lastname"]; ?></h4>
+            <h4 class="m-0"><?php echo $user["firstname"] . " " . $user["lastname"]; ?>
+                <?php if ($user["firstname"] <> $user["commonname"]): ?>
+                    <span class="fs-5">(<?php echo $user["commonname"]; ?>)</span>
+                <?php endif; ?>
+            </h4>
         </nav>
         <hr class="mt-0 mb-4">
         <div class="row">
@@ -334,7 +338,39 @@ require_once(FILEROOT . "/header.php");
                                 <!-- Form Group (username)-->
                                 <div class="mb-2 border-bottom">
                                     <label class="small mb-1" for="role">Role</label>
-                                    <p id="role" class="fw-bold"><?php echo $role; ?></p>
+                                    <p id="role" class="fw-bold"><?php echo $role; ?>
+                                        <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF))): ?>
+                                            <button class="btn btn-sm p-0" id="toggleUserRoleForm">
+                                                <i style="color:blue; font-size:1rem;" class="bi bi-pencil fw-bold mx-0"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </p>
+
+                                    <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF))): ?>
+
+                                        <form style="display:none;" class="fade alert rounded-0 bg-warning-subtle form border border-1 border-danger shadow-sm py-2 px-3 mb-2" id="userRoleForm">
+                                            <!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close Change User Role Form"></button> -->
+
+                                            <div class="d-grid gap-2">
+                                                <label class="form-label p-0 fw-bolder" for="userRoleForm">Change User's Role</label>
+                                                <p class="mb-1"> Changing a user's role will grant them any permissions associated to that role. This will change their data visibiliy and access.</p>
+                                                <p class="m-0"><em>Please ensure you are aware of the changes and are authorised to make such changes. </em></p>
+                                                <input type="hidden" name="userID" value="<?php echo $user['userid']; ?>">
+                                                <label class=" form-label p-0 m-0" for="userRoles">Select New User Role:</label>
+                                                <select name="userRole" id="userRoles" class="rounded-0 border border-secondary border-1 form-control-sm">
+                                                    <option value="0" disabled <?php echo ($role == "None") ? 'selected' : ''; ?>>None</option>
+                                                    <option value="1" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option>
+                                                    <option value="2" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option>
+                                                    <option value="3" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
+                                                    <option value="4" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-danger rounded-0 btn-sm">Update Role</button>
+                                            </div>
+                                        </form>
+                                        <div id="roleUpdateStatus"></div>
+
+                                    <?php endif; ?>
+
                                 </div>
                                 <div class="mb-2">
                                     <label class="small" for="permissions-text">Permissions</label>
@@ -686,17 +722,70 @@ require_once(FILEROOT . "/header.php");
         });
     }
 
+    function changeUserRole() {
+        const form = document.getElementById('userRoleForm');
+        if (!form) {
+            return false;
+        }
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '<?php echo WEBROOT; ?>/update-user-role.php');
+
+            xhr.onload = () => {
+                const response = JSON.parse(xhr.responseText);
+                if (xhr.status === 200 && !response.error) {
+                    const statusElement = document.getElementById('roleUpdateStatus');
+                    document.getElementById('roleUpdateStatus').className = "";
+                    document.getElementById('roleUpdateStatus').classList.add("text-left", "rounded-0", "py-2", "mt-2", "alert", "alert-success", "border", "border-success");
+                    statusElement.innerHTML = `<h6 class='fw-bold pt-1 mb-0'><i class="h5 bi bi-info-circle-fill mx-2"></i>${response.message}</h6>`;
+                    form.hidden = true;
+                } else {
+                    const statusElement = document.getElementById('roleUpdateStatus');
+                    document.getElementById('roleUpdateStatus').className = "";
+                    document.getElementById('roleUpdateStatus').classList.add("text-left", "rounded-0", "p-2", "mt-2", "alert", "alert-danger", "border-2", "border-danger");
+                    const errorList = response.error.map(error => `<li class='pb-1'>${error}</li>`).join('');
+                    statusElement.innerHTML = `<h6 class='fw-bold pt-1 mb-0'><i class="h5 bi bi-exclamation-circle-fill mx-2"></i> Role Update failed due to the following error(s):</h6><ul class='ms-4 mb-0'>${errorList}</ul>`;
+                }
+            };
+            xhr.onerror = () => {
+                document.getElementById('roleUpdateStatus').innerHTML = 'Update failed: Network error';
+            };
+            xhr.send(formData);
+        });
+    }
+
 
     function toggleEditMode() {
         const editButton = document.getElementById("btneditprofile");
         const editableFields = document.querySelectorAll("[data-editable=true]");
         const nonEditableFields = document.querySelectorAll("[data-editable=false]");
         const navigationTabs = document.querySelectorAll("button[ data-bs-toggle=tab]");
+        const submitButtonProfile = document.querySelectorAll("button[type=submit");
+        const fileUploadButtonProfile = document.querySelectorAll("input[type=file]");
+        const emailAccountStatusButton = document.getElementById("btnViewEmail");
 
         function enableEditMode() {
             editButton.textContent = "End Profile Editing";
             editButton.classList.replace("btn-outline-primary", "btn-primary");
             editButton.dataset.enabled = "true";
+
+            if (emailAccountStatusButton) {
+                emailAccountStatusButton.classList.add("disabled", "pe-none");
+                emailAccountStatusButton.setAttribute("aria-disabled", true);
+                emailAccountStatusButton.setAttribute("data-link", emailAccountStatusButton.href);
+                emailAccountStatusButton.removeAttribute("href", "#");
+            }
+
+            submitButtonProfile.forEach((tab) => {
+                tab.setAttribute("disabled", true);
+            });
+
+            fileUploadButtonProfile.forEach((tab) => {
+                tab.setAttribute("disabled", true);
+            });
 
             navigationTabs.forEach((tab) => {
                 tab.setAttribute("disabled", true);
@@ -723,6 +812,21 @@ require_once(FILEROOT . "/header.php");
             editButton.textContent = "Edit Profile";
             editButton.classList.replace("btn-primary", "btn-outline-primary");
             editButton.dataset.enabled = "false";
+
+            if (emailAccountStatusButton) {
+                emailAccountStatusButton.classList.remove("disabled", "pe-none");
+                emailAccountStatusButton.removeAttribute("aria-disabled");
+                emailAccountStatusButton.setAttribute("href", emailAccountStatusButton.dataset.link);
+                emailAccountStatusButton.removeAttribute("data-link");
+            }
+
+            submitButtonProfile.forEach((tab) => {
+                tab.removeAttribute("disabled");
+            });
+
+            fileUploadButtonProfile.forEach((tab) => {
+                tab.removeAttribute("disabled");
+            });
 
             navigationTabs.forEach((tab) => {
                 tab.removeAttribute("disabled");
@@ -933,21 +1037,22 @@ require_once(FILEROOT . "/header.php");
                 }
             });
         <?php endif; ?>
-
-        enrolCertificate.addEventListener("click", async e => {
-            // Can only be done by user, no-one else (including admins)
-            try {
-                enrol_new_certificate = await updateDatabase(userid);
-                errorDiv.className = '';
-                errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
-                errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Successful</h6><p class="mb-0 pb-0">${enrol_new_certificate}</p>`;
-                if (certTable) {
-                    certTable.remove();
+        if (enrolCertificate) {
+            enrolCertificate.addEventListener("click", async e => {
+                // Can only be done by user, no-one else (including admins)
+                try {
+                    enrol_new_certificate = await updateDatabase(userid);
+                    errorDiv.className = '';
+                    errorDiv.classList.add("text-center", "rounded-0", "py-0", "mt-2", "alert", "alert-success", "border", "border-success");
+                    errorDiv.innerHTML = `<h6 class='fw-bold pt-1 mb-0'>Enrolment Successful</h6><p class="mb-0 pb-0">${enrol_new_certificate}</p>`;
+                    if (certTable) {
+                        certTable.remove();
+                    }
+                } catch (error) {
+                    console.error('Error:', error.message);
                 }
-            } catch (error) {
-                console.error('Error:', error.message);
-            }
-        });
+            });
+        }
 
         async function updateDatabase(userid, fieldName = null, fieldValue = null, delete_certificate = null) {
             try {
@@ -977,11 +1082,36 @@ require_once(FILEROOT . "/header.php");
         }
     }
 
+    function toggleUserRoleForm() {
+        const toggleUserRoleButton = document.getElementById("toggleUserRoleForm");
+        const userRoleForm = document.getElementById("userRoleForm");
+        if (userRoleForm) {
+            toggleUserRoleButton.addEventListener("click", e => {
+                userRoleForm.style.display = userRoleForm.style.display === 'none' ? 'block' : 'none';
+
+                if (userRoleForm.style.display === 'block') {
+                    e.target.classList.add("bi-x-circle");
+                    e.target.classList.remove("bi-pencil");
+                    // Apply fade-in effect
+                    userRoleForm.style.opacity = 0;
+                    setTimeout(() => {
+                        userRoleForm.style.opacity = 1;
+                    }, 100);
+                } else if (userRoleForm.style.display === 'none') {
+                    e.target.classList.remove("bi-x-circle");
+                    e.target.classList.add("bi-pencil");
+                }
+            })
+        }
+    }
+
     loadDynamicElements();
     uploadProfilePicture();
+    changeUserRole();
     toggleEditMode();
     changeAccountStatus('lock');
     changeAccountStatus('unlock');
+    toggleUserRoleForm();
     <?php if ($_SESSION["username"] == $username) : ?>
         updateCertificate();
     <?php endif; ?>

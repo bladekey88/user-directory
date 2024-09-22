@@ -34,6 +34,7 @@ $users = run_sql2(get_all_users());
                         <th>User ID</th>
                         <th>Username</th>
                         <th>Name</th>
+                        <th>Known As</th>
                         <th>House</th>
                         <th>Year</th>
                         <th>Last Updated</th>
@@ -46,6 +47,7 @@ $users = run_sql2(get_all_users());
                             <td><?php echo $user["idnumber"]; ?></td>
                             <td><?php echo $user["username"]; ?></td>
                             <td><?php echo $user["firstname"] . " " . $user["lastname"]; ?></td>
+                            <td><?php echo $user["commonname"]; ?> </td>
                             <td><?php echo $user["house"]; ?></td>
                             <td><?php echo $user["year"]; ?></td>
                             <td><?php echo $user["last_updated"]; ?></td>
@@ -72,9 +74,9 @@ $users = run_sql2(get_all_users());
     $(window).on("load", function() {
         new DataTable('#users', {
             stateSave: true,
-            responsive: true,
+            responsive: false,
             order: [
-                [6, 'desc'],
+                [7, 'desc'],
                 [1, 'asc']
             ],
             columnDefs: [{
