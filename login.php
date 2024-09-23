@@ -39,7 +39,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
             storeUserInfoInSession($row);
             redirect("/");
         } else {
-            return "Invalid username, password, or permissions configuration";
+            return "Invalid credentials or account is locked";
         }
     } else {
         return "Invalid username or password";
@@ -76,10 +76,13 @@ function storeUserInfoInSession($row)
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-$username_error = null;
-$password_error = null;
+
+$errors = array();
 $username = null;
-$login_message = $_SESSION["error"] ?? null;
+if (isset($_SESSION["error"])) {
+    array_push($errors, $_SESSION["error"]);
+    unset($_SESSION["error"]);
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // First check for Standard Authentication (UN + PW)
@@ -87,12 +90,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validations
     $username = isset($_POST["username"]) ? sanitise_user_input($_POST["username"]) : null;
     $password = isset($_POST["password"]) ? sanitise_user_input($_POST["password"]) : null;
-    $username_error = empty($username) ? "Username is required" : null;
-    $password_error = empty($password) ? "Password is required" : null;
+
+    if (empty($username)) {
+        array_push($errors, "Username is required");
+    }
+    if (empty($password)) {
+        array_push($errors, "Password is required");
+    }
 
     // If both username and password are provided, attempt login
-    if (!$username_error && !$password_error) {
-        $login_message = authenticateWithUsernameAndPassword($conn, $username, $password);
+    if (!$errors) {
+        array_push($errors, authenticateWithUsernameAndPassword($conn, $username, $password));
     }
 }
 
@@ -105,109 +113,74 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-image: url("assets/img//bg.jpg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        .login-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
-            flex-basis: 50%;
-        }
-
-        @media (width >=1024px) {
-            .login-container {
-                flex-basis: 33%;
-            }
-        }
-
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-        }
-
-        input {
-            width: calc(100%);
-            padding: 8px;
-            margin-bottom: 16px;
-            box-sizing: border-box;
-        }
-
-        input[type="submit"] {
-            background-color: #4caf50;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .certificate-button {
-            display: block;
-            background-color: #2874A6;
-            padding: 0.5rem;
-            margin-block: 1rem;
-            font-size: 0.85rem;
-            text-align: center;
-            box-sizing: border-box;
-            color: white;
-            cursor: pointer;
-            width: calc(100%);
-            text-decoration: none;
-            border: solid 1px black
-        }
-
-        .error-message {
-            color: red;
-            margin-top: 8px;
-            text-align: center;
-        }
-    </style>
+    <title>Login Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="preload" as="style">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Murecho:wght@100..900&display=swap" rel="stylesheet">
 </head>
 
 <body>
-
-    <div class="login-container">
-        <h2>Login</h2>
-        <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-            <label for="username">Username:</label>
-            <input type="text" name="username" autocomplete="username" id="username" value="<?php echo $username; ?>">
-
-            <label for="password">Password:</label>
-            <input type="password" name="password" id="password" autocomplete="current-password">
-
-            <input type="submit" value="Login">
-        </form>
-        <div>
-            <hr>
-            <a href="auth/process-cert-login.php" role="button" class="certificate-button">
-                Certificate Login
-            </a>
+    <div class="login-box">
+        <div class="login-form">
+            <div class="login-form__logo">
+                <img src="assets\img\logo-crest.png" alt="House Logo">
+                <h1 class="logo-text">
+                    Hogwarts Directory
+                </h1>
+            </div>
+            <div class="login-content">
+                <h1 class="login-title">
+                    Log In Using Username and Password
+                </h1>
+                <form id="loginFormUNPW" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+                    <div id="login-input">
+                        <label for="inputUsername">Username</label>
+                        <input type="text" name="username" id="inputUsername" required maxlength="30">
+                        <label for="inputPassword">Password</label>
+                        <input type="password" name="password" id="inputPassword" required maxlength="64">
+                    </div>
+                    <div id="loginMessages">
+                        <?php if (isset($errors)) : ?>
+                            <?php foreach ($errors as $error): ?>
+                                <div class="login-error"><?php echo $error; ?></div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                    <input id="submitButton" type="submit" value="Log In" aria-label="Log in">
+                </form>
+                <div id="forgottenPassword">
+                    <a href="/support/front/helpdesk.php" target="_blank">Forgotten Password</a>
+                </div>
+            </div>
         </div>
-        <div class="error-message"><?php echo $username_error; ?></div>
-        <div class="error-message"><?php echo $password_error; ?></div>
-        <div class="error-message"><?php echo $login_message; ?></div>
+        <div class="login-cert">
+            <h1 class="login-title">
+                <a href="auth/process-cert-login.php" class="login-title">Log In Using Certificate</a>
+            </h1>
+        </div>
     </div>
-
 </body>
+
+<script>
+    function setBGImage() {
+
+        const documentBody = document.body;
+        const prefersDarkMode = window.matchMedia("(prefers-color-scheme:dark)").matches
+        let currentTime = new Date().getHours();
+        if (7 <= currentTime && currentTime < 20 && !prefersDarkMode) {
+            document.body.classList.add("day");
+        } else {
+            document.body.classList.add("night");
+        }
+    }
+
+    setBGImage();
+</script>
 
 </html>

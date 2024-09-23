@@ -1,0 +1,238 @@
+:root {
+    --colour-white: rgb(255, 255, 255);
+    --colour-text-subtle: rgb(52, 58, 64);
+    --colour-primary: rgba(41, 62, 80, 1);
+    --colour-primary-dark: rgb(16, 38, 57);
+    --colour-primary-light: rgba(0, 136, 255, 1);
+    --colour-error: rgb(228, 30, 80);
+    font-family: "DM Sans", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--colour-text-subtle);
+    background: linear-gradient(rgba(0, 0, 0, 0.2),
+            rgba(0, 0, 0, 0.7)),
+        radial-gradient(closest-corner, rgba(0, 0, 50, 0) 60%, rgba(0, 0, 50, 0.5)), linear-gradient(to top left, #800080, #000040 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body.day {
+    background: linear-gradient(rgba(0, 0, 0, 0.2),
+            rgba(0, 0, 0, 0.7)),
+        url("../img/HogwartsDay.jfif"), radial-gradient(closest-corner, rgba(0, 0, 50, 0) 60%, rgba(0, 0, 50, 0.5)), linear-gradient(to top left, #800080, #000040 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: 0.5s;
+}
+
+body.night {
+    background: linear-gradient(rgba(0, 0, 0, 0.2),
+            rgba(0, 0, 0, 0.7)),
+        url("../img/HogwartsNight.jfif"), radial-gradient(closest-corner, rgba(0, 0, 50, 0) 60%, rgba(0, 0, 50, 0.5)), linear-gradient(to top left, #800080, #000040 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: 0.5s;
+}
+
+@media (prefers-color-scheme:dark) {
+    body {
+        background: linear-gradient(rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0.7)),
+            url("assets/img/HogwartsNight.jfif"), radial-gradient(closest-corner, rgba(0, 0, 50, 0) 60%, rgba(0, 0, 50, 0.5)), linear-gradient(to top left, #800080, #000040 100%);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+}
+
+.login-box {
+    width: 480px;
+    border-radius: 0.25rem;
+}
+
+/* *********************************** */
+/* USERNAME AND PASSWORD SECTION       */
+/* *********************************** */
+.login-box .login-form {
+    background-color: var(--colour-white);
+    box-shadow: 0 3.5rem 2.5rem rgba(0, 0, 0, .3), 0 2rem 0.75rem rgba(0, 0, 0, .22);
+    border-radius: 0.25rem 0.25rem 0 0;
+    border: 0 !important;
+    margin: 0 auto;
+}
+
+.login-form h1 {
+    text-align: center;
+}
+
+.login-form img {
+    width: 33%;
+    height: auto;
+    padding-top: 0.5rem;
+}
+
+.login-form .login-form__logo {
+    background-color: #edeff1;
+    border-bottom: #acacac 1px solid;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+    padding-bottom: 0.25rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.login-form__logo .logo-text {
+
+    font-size: 1.75rem;
+    font-weight: 400;
+    font-family: "Murecho", "DM Sans", Arial, sans-serif;
+}
+
+.login-form .login-content {
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+}
+
+.login-title {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+#login-input {
+    width: 100%;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 1fr 2fr;
+    gap: 1rem;
+    margin-block: 1.25rem;
+    color: var(--color-text-subtle);
+}
+
+#login-input>input {
+    padding: 0.425rem 0.5rem 0.425rem 1rem;
+    border: 1px solid rgb(199, 180, 244);
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+#login-input>input:focus-visible {
+    border: 1px solid rgb(77, 44, 176) !important;
+    outline: 1px solid rgb(77, 44, 176);
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, .3);
+    transition: all 0.2s;
+}
+
+#loginMessages {
+    margin-block: 1rem;
+}
+
+.login-error {
+    width: 100%;
+    background-color: var(--colour-primary);
+    padding: 0.75rem;
+    padding-left: 5rem;
+    color: var(--colour-white);
+    font-weight: 400;
+    border-radius: 0.25rem;
+    border: 0;
+    position: relative;
+    margin-block: 0.5rem;
+
+    &::before {
+        height: 100%;
+        content: "ERROR";
+        background-color: var(--colour-error);
+        position: absolute;
+        top: 0;
+        left: 0;
+        text-align: center;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        line-height: 2.8rem;
+        border-top-left-radius: inherit;
+        border-bottom-left-radius: inherit;
+        font-weight: 500;
+    }
+}
+
+#submitButton {
+    width: 100%;
+    background-color: hsl(130, 69%, 32%);
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--colour-white);
+    font-weight: 500;
+    border: none;
+    border-radius: 0.25rem;
+    margin-bottom: 0.75rem;
+
+    &:hover,
+    &:focus-visible {
+        background-color: hsl(131, 80%, 26%);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+}
+
+#forgottenPassword {
+    text-decoration: none;
+    text-align: center;
+}
+
+#forgottenPassword a {
+    text-decoration: none;
+    color: var(--colour-primary);
+    font-size: 0.90rem;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+        color: var(--colour-primary-dark);
+    }
+}
+
+/* *********************************** */
+/* CERTIFICATE SECTION       */
+/* *********************************** */
+
+.login-box .login-cert {
+    background-color: #edeff1;
+    text-align: center;
+    color: rgb(110, 110, 110);
+    padding-block: 0.75rem;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+
+}
+
+.login-cert .login-title {
+    margin-block: 0;
+}
+
+.login-box a {
+    text-decoration: none;
+    color: inherit;
+    font-size: 0.90rem;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+        color: var(--colour-primary-dark);
+    }
+}

@@ -69,8 +69,8 @@ function authenticateWithClientCertificate($conn, $username, $email)
             }
         }
     }
-    $_SESSION["error"] =  "<p>The certificate is not valid or cannot be used for login.</p>
-    <p>Select another certificate, or use username and password.</p>";
+    $_SESSION["error"] =  "<p>The certificate is not valid or cannot be used for login at this time.
+   Select another certificate, or use username and password.</p>";
     redirect("/login.php");
 }
 

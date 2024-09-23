@@ -724,11 +724,13 @@ require_once(FILEROOT . "/header.php");
 
     function changeUserRole() {
         const form = document.getElementById('userRoleForm');
-        const fieldsetByIndex = form.elements[0];
+
 
         if (!form) {
             return false;
         }
+        const fieldsetByIndex = form.elements[0];
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
