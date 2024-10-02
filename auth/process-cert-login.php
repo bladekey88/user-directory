@@ -4,7 +4,7 @@ session_start();
 
 // Exit if already logged in
 if (isset($_SESSION["userid"])) {
-    redirect("/");
+    redirect("/index.php");
 }
 
 
@@ -42,7 +42,7 @@ if ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
 ########################################################
 function authenticateWithClientCertificate($conn, $username, $email)
 {
-    $sql = "SELECT t1.userid, t1.username, t1.email,t1.firstname,t1.lastname,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t3.role_name,t4.*
+    $sql = "SELECT t1.userid, t1.username, t1.email,t1.firstname,t1.lastname,t1.commonname,t1.lastname,t1.idnumber,t1.locked,t1.hidden,t1.house, t1.year, t3.role_name,t4.*
     FROM users t1
     LEFT JOIN user_role t2 ON t1.userid = t2.user_id
     LEFT JOIN roles t3 ON t2.role_id = t3.role_id
@@ -65,7 +65,7 @@ function authenticateWithClientCertificate($conn, $username, $email)
             ) {
                 startSecureSession();
                 storeUserInfoInSession($row);
-                redirect("/");
+                redirect("/index.php");
             }
         }
     }
@@ -103,5 +103,7 @@ function storeUserInfoInSession($row)
     $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
     $_SESSION["role"] = $row["role_name"];
     $_SESSION["email"] = $row["email"];
+    $_SESSION["house"] = $row["house"];
+    $_SESSION["year"] = $row["year"];
     $_SESSION["login_method"] = "CLIENT_CERTIFICATE";
 }

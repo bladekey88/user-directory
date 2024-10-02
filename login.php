@@ -5,7 +5,7 @@
 require_once(__DIR__ . "/config/functions.php");
 session_start();
 if (isset($_SESSION["userid"])) {
-    redirect("/");
+    redirect("/index.php");
 }
 
 ########################################################
@@ -37,7 +37,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
         if (password_verify($password, $row['password']) && strval($row["locked"]) == "0") {
             startSecureSession();
             storeUserInfoInSession($row);
-            redirect("/");
+            redirect("/index.php");
         } else {
             return "Invalid credentials or account is locked";
         }
@@ -113,7 +113,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Test</title>
+    <title>Login | Hogwarts Directory</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
     <link rel="stylesheet" href="assets/css/login.css">
