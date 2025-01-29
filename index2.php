@@ -41,12 +41,20 @@ $user_locked_column = array_column($users, "locked", "username");
             <h1>User Management</h1>
             <nav class="page-sections-navigation">
                 <ul>
+                    <li><a href="#show-own-profile-section">My Profile</a></li>
                     <li><a href="#user-list-section">User List</a></li>
                     <?php if (check_user_permission(PERMISSION_ADD_USER)): ?>
                         <li><a href="#user-creation-section">Add User</a></li>
                     <?php endif; ?>
                 </ul>
             </nav>
+
+            <section id="show-own-profile-section" class="page-section-no-grid">
+                <h2>My Profile</h2>
+                <p><a href="<?php echo WEBROOT; ?>/profile2.php">Click this link to view your profile page</a></p>
+            </section>
+
+
             <section id="user-list-section" class="page-section-no-grid">
                 <h2>User List</h2>
                 <?php if (in_array(ROLE_NONE, $unique_values_user_role_column)): ?>
