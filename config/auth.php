@@ -7,7 +7,7 @@
 @$header = "HTTP/1.1 401 Unauthorized";
 
 // Start the session
-@session_set_cookie_params(0, '/', '.hogwarts.wiz', true, false);
+@session_set_cookie_params(0, '/', '.hogwarts.wiz', true, true);
 @session_start();
 
 // Check if the user is not authenticated
@@ -20,6 +20,9 @@ if ($_SESSION["login_method"] == "CLIENT_CERTIFICATE" && $_SESSION["username"] !
     session_destroy();
     redirect(LOGIN_URL, $header);
 }
+
+// Update session to always be 20 minutes from last activity
+setcookie("PHPSESSID", $_COOKIE["PHPSESSID"], time() + 1200, "/", '.hogwarts.wiz', 1, 1);
 
 
 if (!isset($_SESSION["role"]) || strtoupper($_SESSION["role"]) == ROLE_NONE) : ?>

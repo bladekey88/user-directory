@@ -1,0 +1,116 @@
+/* Derived from https://piccalil.li/blog/how-i-build-a-button-component/ */
+.button {
+    --button-bg: var(--colour-primary-light);
+    --button-color: var(--colour-primary-dark);
+    --button-hover-bg: var(--colour-header);
+    --button-hover-color: #ffffff;
+    --button-border-width: 3px;
+    --button-border-style: solid;
+    --button-border-color: #214b72;
+    --button-radius: 0.5rem;
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--button-gap, 0.25rem);
+    padding: var(--button-padding, 0.25rem 0.5rem);
+
+    background: var(--button-bg);
+    color: var(--button-color);
+
+    border-width: var(--button-border-width);
+    border-style: var(--button-border-style);
+    border-color: var(--button-border-color);
+    border-radius: var(--button-radius);
+
+    text-decoration: none;
+    font-weight: var(--button-font-weight, 400);
+    font-size: var(--button-font-size, 0.75rem);
+    letter-spacing: 0.05ch;
+    font-family: inherit;
+    line-height: 1.1;
+    /* Set or buttons will be different sizes (<a>/<button>) */
+
+    cursor: pointer;
+}
+
+.button img,
+.button svg {
+    height: var(--button-icon-size, 2rem);
+    width: auto;
+    flex: none;
+}
+
+/* Hover/focus/active */
+
+.button:hover {
+    background: var(--button-hover-bg);
+    color: var(--button-hover-color);
+}
+
+.button:focus {
+    outline-width: var(--button-outline-width, var(--button-border-width));
+    outline-style: var(--button-outline-style, var(--button-border-style));
+    outline-color: var(--button-outline-color, var(--button-border-color));
+    outline-offset: var(--button-outline-offset,
+            calc(var(--button-border-width) * 2));
+}
+
+.button:active {
+    scale: 95%;
+}
+
+/* Variants */
+.button[data-button-variant="primary"] {
+    --button-bg: #f3de8a;
+    --button-color: #342a21;
+    --button-border-color: currentColor;
+    --button-hover-bg: #f1d979;
+    --button-hover-color: #342a21;
+}
+
+.button[data-button-variant="positive"] {
+    --button-bg: #2d936c;
+    --button-border-color: #094430;
+    --button-hover-bg: #359d75;
+    --button-color: white;
+}
+
+.button[data-button-variant="negative"] {
+    --button-bg: #b33c48;
+    --button-border-color: #421419;
+    --button-hover-bg: #c24a56;
+    --button-color: white;
+}
+
+/* Ghost buttons */
+.button[data-ghost-button] {
+    --button-bg: transparent;
+    --button-border-color: currentColor;
+    --button-color: currentColor;
+}
+
+/* Radius variants */
+.button[data-button-radius="hard"] {
+    --button-radius: 0;
+}
+
+
+.button:disabled,
+.button[disabled]:hover,
+.button[disabled]:active {
+    opacity: 0.6;
+    filter: grayscale(40%);
+    cursor: not-allowed;
+    background: transparent;
+    color: inherit;
+    scale: 100%;
+}
+
+input[type='file']:disabled::file-selector-button {
+    opacity: 0.6;
+    filter: grayscale(40%);
+    cursor: not-allowed;
+    background: grey;
+    color: inherit;
+    scale: 100%;
+}

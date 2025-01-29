@@ -4,7 +4,7 @@ session_start();
 
 // Exit if already logged in
 if (isset($_SESSION["userid"])) {
-    redirect("/index.php");
+    redirect("/index2.php");
 }
 
 
@@ -21,8 +21,6 @@ if ($_SERVER['SSL_CLIENT_VERIFY'] == 'NONE') {
     $_SESSION["error"] = "No certificate presented";
     redirect("/login.php");
 }
-
-
 
 // Process Presented Certificate
 if ($_SERVER['SSL_CLIENT_VERIFY'] == 'SUCCESS') {
@@ -65,7 +63,8 @@ function authenticateWithClientCertificate($conn, $username, $email)
             ) {
                 startSecureSession();
                 storeUserInfoInSession($row);
-                redirect("/index.php");
+                redirect("/index2.php");
+                exit();
             }
         }
     }

@@ -3,8 +3,17 @@
 require_once(__DIR__ . "/config/auth.php");
 
 
+
 if (!isset($_POST["idnumber"])) {
-    echo "An ID Number is required to use this functionality.";
+    http_response_code(400);
+    echo json_encode(array("error" => "An ID Number is required to use this functionality."));
+    exit();
+}
+
+
+if (!check_user_permission(PERMISSION_EDIT_OWN_PROFILE) && !check_user_permission(PERMISSION_EDIT_OWN_PROFILE)) {
+    http_response_code(403);
+    echo json_encode(array("error" => "You do not have permission to perform this action."));
     exit();
 }
 
@@ -35,12 +44,13 @@ if (!in_array($fileExt, $allowedExts)) {
 }
 
 // Error is the files is too large
-if ($fileSize > 2397152) { // 2MB
-    array_push($errors, "File size is greater than 2MB (~" . round($fileSize / 1E6, 1) . "MB)");
+if ($fileSize > 4397152) { // 4MB
+    array_push($errors, "File size is greater than 4MB (~" . round($fileSize / 1E6, 1) . "MB)");
 }
 
 // If there are errors than tell the user and exit the script - no db commits
 if (!empty($errors)) {
+    http_response_code(400);
     $messages["message"] = "Upload Failed - One or more errors have occurred.";
     $messages["error"] = $errors;
     echo json_encode($messages);
@@ -72,18 +82,29 @@ if (move_uploaded_file($fileTmpName, $uploadDir . $newFileName)) {
     }
 
     $check_image_exists = run_sql2(check_profile_picture_exists($_POST["idnumber"]));
-    if (!$check_image_exists) {
-        // No rows returned so need to insert
-        $insert_row = run_sql2(insert_new_profile_picture($_POST["idnumber"], $imgPath));
-    } else {
-        //Update existing row in DB, then delete the old image from disk
-        $update_row = run_sql2(update_profile_picture($_POST["idnumber"], $imgPath));
-        @unlink($check_image_exists[0]["path"]);
+
+    try {
+        if (!$check_image_exists) {
+            // No rows returned so need to insert
+            $insert_row = run_sql2(insert_new_profile_picture($_POST["idnumber"], $imgPath));
+        } else {
+            // Update existing row in DB, then delete the old image from disk
+            $update_row = run_sql2(update_profile_picture($_POST["idnumber"], $imgPath));
+            @unlink($check_image_exists[0]["path"]);
+        }
+    } catch (Exception $e) {
+        http_response_code(500);
+        array_push($errors, "Database error. Please contact IT Services for further support. Error Code: 1290SQLSTATE");
+        $messages["message"] = "Upload Failed - One or more errors have occurred.";
+        $messages["error"] = $errors;
+        echo json_encode($messages);
+        exit();
     }
+
     // Return to use and inform them of completion
     echo json_encode(
         array(
-            "message" => "Profile picture updated",
+            "message" => "Profile picture updated. You may need to refresh the page to see the changes.",
             "imagePath" => $uploadDir . $newFileName,
         )
     );

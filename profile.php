@@ -183,6 +183,15 @@ require_once(FILEROOT . "/header.php");
                 <?php endif; ?>
             </div>
         <?php endif; ?>
+
+        <div class="alert alert-info border-2 border-secondary shadow-lg rounded-0 alert-dismissible fade show h6 my-4">
+            <i class="bi bi-info-circle h5 px-2 my-0 text-primary"></i>
+            <a href="profile2.php?idnumber=<?php echo $user["idnumber"]; ?>&user=<?php echo $user["username"]; ?>" class="link-offset-1">
+                View New Profile Page (beta)
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+        </div>
         <!-- Account page navigation-->
         <nav class="nav nav-borders">
             <h4 class="m-0"><?php echo $user["firstname"] . " " . $user["lastname"]; ?>
@@ -338,13 +347,19 @@ require_once(FILEROOT . "/header.php");
                                 <div class="mb-2 border-bottom">
                                     <label class="small mb-1" for="role">Role</label>
                                     <p id="role" class="fw-bold"><?php echo $role; ?>
-                                        <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF))): ?>
-                                            <button class="btn btn-sm p-0" id="toggleUserRoleForm">
-                                                <i style="color:blue; font-size:1rem;" class="bi bi-pencil fw-bold mx-0"></i>
-                                            </button>
+                                        <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF)  || check_user_role(ROLE_SENIOR_STAFF))): ?>
+                                            <?php
+                                            $editable_user_roleid = run_sql2(get_user_role($user["userid"]))[0]["role_id"];
+                                            $current_user_roleid = run_sql2(get_user_role($_SESSION["userid"]))[0]["role_id"];
+
+                                            if ($editable_user_roleid < $current_user_roleid || check_user_role(ROLE_ADMIN)) : ?>
+                                                <button class="btn btn-sm p-0" id="toggleUserRoleForm">
+                                                    <i style="color:blue; font-size:1rem;" class="bi bi-pencil fw-bold mx-0"></i>
+                                                </button>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </p>
-                                    <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF))): ?>
+                                    <?php if ($_SESSION["username"] != $user["username"]  && (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_STAFF) || check_user_role(ROLE_SENIOR_STAFF))): ?>
 
                                         <form style="display:none;" class="fade alert rounded-0 bg-warning-subtle form border border-1 border-danger shadow-sm py-2 px-3 mb-2" id="userRoleForm">
                                             <!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close Change User Role Form"></button> -->
@@ -357,11 +372,11 @@ require_once(FILEROOT . "/header.php");
                                                     <label class=" form-label p-0 m-0" for="userRoles">Select New User Role:</label>
                                                     <select name="userRole" id="userRoles" class="rounded-0 border border-secondary border-1 form-control-sm">
                                                         <option value="0" disabled <?php echo ($role == "None") ? 'selected' : ''; ?>>None</option>
-                                                        <option value="1" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option>
-                                                        <option value="5" <?php echo ($role == "Senior Staff") ? 'selected' : ''; ?>>Senior Staff</option>
-                                                        <option value="2" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option>
-                                                        <option value="3" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
-                                                        <option value="4" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
+                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?> <option value="5" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option> <?php endif; ?>
+                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?><option value="4" <?php echo ($role == "Senior Staff") ? 'selected' : ''; ?>>Senior Staff</option> <?php endif; ?>
+                                                        <?php if (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF)) : ?><option value="3" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option><?php endif; ?>
+                                                        <option value="2" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
+                                                        <option value="1" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
                                                     </select>
                                                     <button type="submit" class="btn btn-danger rounded-0 btn-sm">Update Role</button>
                                                 </div>
@@ -657,7 +672,7 @@ require_once(FILEROOT . "/header.php");
                     } else if (response.status === 400) {
                         errorMessage = '<?php echo LANG_BAD_REQUEST; ?>';
                     } else {
-                        errorMessage = 'An error occurred. Please contact the adminisrator for more information.';
+                        errorMessage = 'An error occurred. Please contact the administrator for more information.';
                     }
                     throw new Error(errorMessage);
                 }
@@ -673,7 +688,7 @@ require_once(FILEROOT . "/header.php");
 
                 statusElement.innerHTML = `<h6 class='fw-bolder pt-1 mb-0'>${data.message}</h6>`;
                 if (data.account && data.status) {
-                    statusElement.innerHTML += `<p class="my-1 ms-2"><code>${data.account} => ${data.status}</code></p>`;
+                    statusElement.innerHTML += `<p class="my-1 ms-2"><code>${data.account}z => ${data.status}</code></p>`;
                 }
 
                 button.disabled = true;
@@ -773,7 +788,7 @@ require_once(FILEROOT . "/header.php");
 
         function enableEditMode() {
             editButton.textContent = "End Profile Editing";
-            editButton.classList.replace("btn-outline-primary", "btn-primary");
+            editButton.classList.add("active");
             editButton.dataset.enabled = "true";
 
             if (emailAccountStatusButton) {
@@ -814,7 +829,7 @@ require_once(FILEROOT . "/header.php");
         function disableEditMode() {
             const updateStatusBadges = document.querySelectorAll("span.update-status");
             editButton.textContent = "Edit Profile";
-            editButton.classList.replace("btn-primary", "btn-outline-primary");
+            editButton.classList.add("btn-primary", "btn-outline-primary");
             editButton.dataset.enabled = "false";
 
             if (emailAccountStatusButton) {

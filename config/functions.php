@@ -66,8 +66,8 @@ class DatabaseConnection
     public function update($table, $data, $where)
     // Constructs and executes the UPDATE SQL query with named placeholders
     {
-        $set = implode(', ', array_map(fn ($k) => "$k = :$k", array_keys($data)));
-        $where_clase = implode(' AND ', array_map(fn ($k) => "$k = :where_$k", array_keys($where)));
+        $set = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($data)));
+        $where_clase = implode(' AND ', array_map(fn($k) => "$k = :where_$k", array_keys($where)));
         $sql = "UPDATE $table SET $set WHERE $where_clase";
         $stmt = $this->pdo->prepare($sql);
 
@@ -86,7 +86,7 @@ class DatabaseConnection
     public function delete($table, $where)
     // Constructs and executes the DELETE SQL query with named placeholders
     {
-        $whereClause = implode(' AND ', array_map(fn ($k) => "$k = :where_$k", array_keys($where)));
+        $whereClause = implode(' AND ', array_map(fn($k) => "$k = :where_$k", array_keys($where)));
         $sql = "DELETE FROM $table WHERE $whereClause";
         $stmt = $this->pdo->prepare($sql);
 
@@ -227,6 +227,7 @@ class LDAPConnection
     {
         if ($result["count"] > 0) {
             $details = array();
+            $details["dn"] = $result[0]["dn"];
             for ($i = 0; $i < $result["count"]; $i++) {
                 $entry = array();
                 for ($j = 0; $j < $result[$i]["count"]; $j++) {
@@ -273,6 +274,39 @@ function check_user_role($role, $userid = null)
         return strtoupper($result["role_name"]) === strtoupper($role);
     }
     return False;
+}
+
+function check_user_has_any_of_roles(array $roles, int $userid = null)
+{
+    // The roles array must not be empty
+    if (empty($roles)) {
+        return False;
+    }
+
+    $user_id = isset($userid) ? $userid : $_SESSION["userid"];
+    $get_user_role = run_sql2(get_user_role($user_id));
+    $result = $get_user_role[0];
+
+    // We don't validate the role passed in, just check to see if they match
+    if ($result) {
+        array_map("strtoupper", $roles);
+        return in_array(strtoupper($result["role_name"]), ($roles));
+    }
+    return False;
+}
+
+function get_role_details(string $role_name = null, int $role_id = null)
+{
+    $role_details = [];
+    if ($role_name) {
+        $role_details["by_name"] = run_sql2(get_role_information_by_name($role_name));
+    }
+
+    if ($role_id) {
+        $role_details["by_id"] = run_sql2(get_role_information_by_id($role_id));
+    }
+
+    return $role_details;
 }
 
 
@@ -343,7 +377,7 @@ function generate_user_idnumber(): string
 }
 
 
-function _run_ldap(string $filter, array $fields = null): string|array
+function _run_ldap(string $filter, array $fields = null, $search_base = LDAP_DN_SEARCH_BASE): string|array
 
 /** Private(ish) function to run queries against LDAP.
  *  Use by other function, but could be used directly if necessary */
@@ -359,14 +393,12 @@ function _run_ldap(string $filter, array $fields = null): string|array
         return [ERROR_LDAP_CONNECTION];
     }
     if ($fields) {
-        $data = $ldap->search(LDAP_DN_SEARCH_BASE, $filter, $fields);
+        $data = $ldap->search($search_base, $filter, $fields);
     } else {
-        $data = $ldap->search(LDAP_DN_SEARCH_BASE, $filter);
+        $data = $ldap->search($search_base, $filter);
     }
     $ldap->close_connection();
-
-
-    return $data ? $data : ["User does not exist in LDAP"];
+    return $data ? $data : ["No records found in HADS"];
 }
 
 function ldap_get_user_info(string $username = null): array|string
@@ -374,7 +406,24 @@ function ldap_get_user_info(string $username = null): array|string
  * If no username is supplied it falls back to session username */
 {
     $user = $username ?? $_SESSION["username"];
-    return _run_ldap("uid=$user");
+    $user_data = _run_ldap("uid=$user");
+    if (sizeof($user_data) > 1) {
+        $user_data[0]["groups"] = ldap_get_user_groups($user_data["dn"]);
+    }
+    return $user_data;
+}
+
+function ldap_get_user_groups(string $user_dn): array
+// Queries ldap to find all of users groups
+{
+    $filter = "(&(objectClass=groupOfNames)(member={$user_dn}))";
+    $fields = ["cn", "objectclass", "description", "o", "ou", "businesscategory"];
+    $groups =  _run_ldap($filter, $fields, search_base: LDAP_BASE_GROUP_DN);
+
+    // Removes DN that was added by default
+    unset($groups["dn"]);
+
+    return $groups;
 }
 
 function ldap_parse_user_photo($img_data)
@@ -416,9 +465,11 @@ function validate_client_certificate()
 }
 
 
-function get_certificate_information(): array|bool
+function get_certificate_information($userid = null): array|bool
 {
-    $userid = $_SESSION["userid"];
+    if (!isset($userid)) {
+        $userid = $_SESSION["userid"];
+    }
     $get_cert_info = run_sql2(get_user_certificate($userid));
     if ($get_cert_info) {
         $result = $get_cert_info[0];
@@ -453,8 +504,76 @@ function redirect(string $url, string $custom_header = null)
         $new_url = $url;
     }
     $custom_header !== null ?  header($custom_header) : null;
-    header("Location: $new_url");
+    header("Location: $new_url", FALSE);
     exit();
 }
+
+
+function create_user(
+    string $username,
+    string $email,
+    string $hashed_password,
+    string $firstname,
+    string $lastname,
+    ?string $middlename = null,
+    ?string $commonname = null,
+    string $house,
+    string $year,
+    string $idnumber,
+    int $role,
+    ?string $quidditch = "0",
+    ?string $prefect = null,
+    string $sexgender
+) {
+
+
+    if (!$commonname) $commoname = $firstname;
+    $add_profile = run_sql2(insert_new_user($username, $email, $hashed_password, $firstname, $lastname, $middlename, $commonname, $house, $year, $idnumber, $quidditch, $prefect));
+    if ($add_profile) {
+        $userid = $add_profile;
+
+        // Set the user role
+        $user_role = run_sql2(update_user_role($userid, $role));
+
+        // Set sex (DB action means that an entry in the tabel is automatically created)
+        $sex = run_sql2(modify_user_other_attributes("update", $userid, "user_id", ["sex_id" => $sexgender], "user_special_sxgndr"));
+
+        //Update Prefect if necessary
+        if ($prefect) {
+            $prefect = run_sql2(insert_user_prefect_status($userid, 1));
+        }
+    }
+}
+
+/**
+ * Checks if the current user has permission to edit another user.
+ * This check applies at a role level, however actual edit ability may be further limited by permissions
+ * 
+ * This function determines edit permissions based on the following rules:
+ * 1. A user can always edit themselves.
+ * 2. A user can edit another user if their role has a higher ID than the user being edited.
+ * 3. Administrators (users with the ROLE_ADMIN role) can edit any user.
+ *
+ * @param int $user_being_edited_id The ID of the user being edited.
+ * @return bool True if the current user can edit the specified user
+ * @return string False if the current user cannot edit the specified user
+ * 
+ */
+function check_current_user_can_edit_user($user_being_edited_id): bool|string
+{
+    // Get the user role of editABLE user
+    $editable_user_roleid = run_sql2(get_user_role($user_being_edited_id))[0]["role_id"];
+
+    // Get the user role of the editING user
+    $current_user_roleid = run_sql2(get_user_role($_SESSION["userid"]))[0]["role_id"];
+
+    // Compare roles id. Users can only edit a role id lower than their own unless they have the role ADMIN (or they are the current user)
+    $editable = (($_SESSION["userid"] == $user_being_edited_id) || ($editable_user_roleid < $current_user_roleid) || (check_user_role(ROLE_ADMIN))) ? True : "false";
+
+    return $editable;
+}
+
+
+
 
 require_once(FILEROOT . "/config/sql.php");

@@ -16,6 +16,14 @@ $users = run_sql2(get_all_users());
 
 <main>
     <div class="container px-4 mt-4">
+        <div class="alert alert-info border-2 border-secondary shadow-lg rounded-0 alert-dismissible fade show h6 my-4">
+            <i class="bi bi-info-circle h5 px-2 my-0 text-primary"></i>
+            <a href="index2.php" class="link-offset-1">
+                View New Directory Page (beta)
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+        </div>
         <nav class="d-flex align-items-center justify-content-between">
             <h4 class="m-0">User List</h4>
             <?php if (check_user_permission(PERMISSION_ADD_USER)) : ?>
@@ -26,6 +34,7 @@ $users = run_sql2(get_all_users());
             <?php endif; ?>
         </nav>
         <hr class="mt-0 mb-4">
+
         <?php
         if ($users) : ?>
             <table class="styled-table" id="users" name="users" style="width:100%" ;>

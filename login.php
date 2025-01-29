@@ -5,7 +5,7 @@
 require_once(__DIR__ . "/config/functions.php");
 session_start();
 if (isset($_SESSION["userid"])) {
-    redirect("/index.php");
+    redirect("/index2.php");
 }
 
 ########################################################
@@ -23,7 +23,7 @@ function executeQueryWithParams($conn, $sql, $params, $types)
 
 function authenticateWithUsernameAndPassword($conn, $username, $password)
 {
-    $sql = "SELECT t1.userid, t1.username, t1.email, t1.password, t1.firstname, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden, t3.role_name
+    $sql = "SELECT t1.userid, t1.username, t1.email, t1.password, t1.firstname, t1.commonname, t1.lastname, t1.idnumber, t1.locked, t1.hidden,t1.house,t1.year, t3.role_name
     FROM users t1
     LEFT JOIN user_role t2 ON t1.userid = t2.user_id
     LEFT JOIN roles t3 ON t2.role_id = t3.role_id
@@ -37,7 +37,7 @@ function authenticateWithUsernameAndPassword($conn, $username, $password)
         if (password_verify($password, $row['password']) && strval($row["locked"]) == "0") {
             startSecureSession();
             storeUserInfoInSession($row);
-            redirect("/index.php");
+            redirect("/index2.php");
         } else {
             return "Invalid credentials or account is locked";
         }
@@ -65,6 +65,8 @@ function storeUserInfoInSession($row)
     $_SESSION["name"] = $row["commonname"] . " " . $row["lastname"];
     $_SESSION["role"] = $row["role_name"];
     $_SESSION["email"] = $row["email"];
+    $_SESSION["house"] = $row["house"];
+    $_SESSION["year"] = $row["year"];
     $_SESSION["login_method"] = isset($row['password']) ? "AUTHENTICATION" : "CLIENT_CERTIFICATE";
 }
 
@@ -173,7 +175,8 @@ $conn->close();
         const documentBody = document.body;
         const prefersDarkMode = window.matchMedia("(prefers-color-scheme:dark)").matches
         let currentTime = new Date().getHours();
-        if (7 <= currentTime && currentTime < 20 && !prefersDarkMode) {
+        console.info("The local time is " + new Date());
+        if (7 <= currentTime && currentTime < 19 && !prefersDarkMode) {
             document.body.classList.add("day");
         } else {
             document.body.classList.add("night");

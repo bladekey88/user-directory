@@ -4,6 +4,7 @@ define("SELECT", "SELECT");
 define("INSERT", "INSERT");
 define("UPDATE", "UPDATE");
 define("DELETE", "DELETE");
+define('VALID_SQL_METHODS', [SELECT, INSERT, UPDATE, DELETE]);
 
 /**
  * Generates SQL query and parameters to retrieve all users.
@@ -13,13 +14,13 @@ define("DELETE", "DELETE");
  */
 function get_all_users(int|null $hidden = null): array
 {
-    $sql = "SELECT userid, username, email, firstname, lastname, commonname, middlename, house, year, quidditch, idnumber, institution, country, city, locked, last_updated, hidden";
+    $sql = "SELECT userid, username, email, firstname, lastname, commonname, middlename, house, year, quidditch, idnumber, institution, country, city, locked, last_updated, hidden,role_name as role";
     $params = [];
 
     if (!$hidden) {
-        $sql .= " FROM users WHERE hidden IS :hidden";
+        $sql .= " FROM users_with_roles WHERE hidden IS :hidden";
     } else {
-        $sql .= " FROM users WHERE hidden IS NOT :hidden";
+        $sql .= " FROM users_with_roles WHERE hidden IS NOT :hidden";
     }
     $params['hidden'] = Null;
     $sql .= " ORDER BY locked DESC, username ASC";
@@ -29,10 +30,8 @@ function get_all_users(int|null $hidden = null): array
 function get_specific_user(string $username, bool $exclude_hidden = true)
 {
     $exclude_hidden ? $hidden_stmt = "AND hidden IS NULL" : $hidden_stmt = null;
-    $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,t1.idnumber,institution,country,city,locked,last_updated,t2.path
-    FROM users t1
-    LEFT JOIN user_profilepicture t2
-    ON t1.idnumber = t2.idnumber
+    $sql = "SELECT userid,username,email,firstname,lastname,commonname,middlename,house,year,quidditch,idnumber,institution,country,city,locked,last_updated,path,role_name,sex,prefect
+    FROM users_with_roles   
     WHERE username = :username $hidden_stmt;";
     $params = ["username" => $username];
     return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
@@ -48,7 +47,8 @@ function insert_new_user(
     ?string $commonname = null,
     string $house,
     string $year,
-    string $idnumber
+    string $idnumber,
+    ?string $quidditch = "0",
 ) {
     $table = "users";
     $data =  [
@@ -62,10 +62,36 @@ function insert_new_user(
         'house' => $house,
         'year' => $year,
         'idnumber' => $idnumber,
+        'quidditch' => $quidditch,
     ];
     return ['operation' => INSERT, 'table' => $table, 'data' => $data];
 }
 
+function modify_user_other_attributes(string $method, int $userid, string $id_field_name, array $attributes, string $table_name)
+{
+    if (!in_array(strtoupper($method), VALID_SQL_METHODS)) {
+        throw new Exception("Invalid SQL method specified.");
+        return;
+    }
+    $table = $table_name;
+    $data = $attributes;
+    $where = [$id_field_name => $userid];
+    if ($method != INSERT) {
+        return ['operation' => $method, 'table' => $table, 'data' => $data, 'where' => $where];
+    } else {
+        return ['operation' => INSERT, 'table' => $table, 'data' => $data];
+    }
+}
+
+function update_user_prefect_status(string $userid, string $prefect_status_id)
+{
+    return modify_user_other_attributes("update", $userid, "user_id", ["prefect_id" => $prefect_status_id], "user_special_prefect");
+}
+
+function insert_user_prefect_status(string $userid, string $prefect_status_id)
+{
+    return modify_user_other_attributes("insert", $userid, "user_id", ["user_id" => $userid, "prefect_id" => $prefect_status_id], "user_special_prefect");
+}
 
 function check_profile_picture_exists(string $idnumber)
 {
@@ -101,10 +127,26 @@ function update_user_role(string $userid, string $roleid)
 
 function toggle_user_lock_status(string $username, $action)
 {
-    $lock_value = (strtolower($action) == "lock") ? 1 : 0;
+    if ($action == (strtolower("lock"))) {
+        $lock_value = 1;
+    } elseif ($action == (strtolower("unlock"))) {
+        $lock_value = 0;
+    } else {
+        throw new Exception("Invalid action for changing account lock status : " . $action);
+    }
+
     $table = "users";
     $data = ['locked' => $lock_value];
     $where = ($lock_value == 1) ? ['username' => $username, 'locked' => 0] : ['username' => $username, 'locked' => 1];
+    return ['operation' => UPDATE, 'table' => $table, 'data' => $data, 'where' => $where];
+}
+
+function enable_user_hidden_status(string $username)
+{
+    // Hidden applies if the field is not null
+    $table = "users";
+    $data = ['hidden' => 1];
+    $where = ['username' => $username];
     return ['operation' => UPDATE, 'table' => $table, 'data' => $data, 'where' => $where];
 }
 
@@ -135,7 +177,7 @@ function get_user_role(string $userid)
 
 function get_role_permissions(int $roleid)
 {
-    $sql = "SELECT t2.permission_id, t2.permission_name as permission
+    $sql = "SELECT t2.permission_id, t2.permission_name as permission, t2.permission_description as `description`
     FROM role_permissions t1
     INNER JOIN permissions t2 on t1.permission_id = t2.permission_id
     WHERE t1.role_id = :roleid
@@ -146,7 +188,7 @@ function get_role_permissions(int $roleid)
 
 function get_role_permissions_by_role_name(string $rolename)
 {
-    $sql = "SELECT t2.permission_id, t2.permission_name as permission
+    $sql = "SELECT t2.permission_id, t2.permission_name as permission, t2.permission_description as `description`
     FROM role_permissions t1
     INNER JOIN permissions t2 on t1.permission_id = t2.permission_id
     WHERE t1.role_id IN (
@@ -158,6 +200,27 @@ function get_role_permissions_by_role_name(string $rolename)
     $params = ["rolename" => $rolename];
     return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }
+
+function get_role_information_by_name(string $rolename)
+{
+    $sql = "SELECT t1.role_id, UPPER(t1.role_name) as role
+    FROM roles t1
+    WHERE UPPER(t1.role_name) = :rolename
+    ORDER BY t1.role_name ASC;";
+    $params = ["rolename" => strtoupper($rolename)];
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
+}
+
+function get_role_information_by_id(int $roleid)
+{
+    $sql = "SELECT t1.role_id, UPPER(t1.role_name) as role
+    FROM roles t1
+    WHERE t1.role_id = :roleid
+    ORDER BY t1.role_id ASC;";
+    $params = ["roleid" => $roleid];
+    return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
+}
+
 
 function get_attribute_exists(string $attribute, string $value)
 {
@@ -184,7 +247,6 @@ function get_user_vle_info(string $username, string $idnumber)
         u.username,
         u.auth,
         -- Converting boolean values to strings
-        IF(u.confirmed=0,'false','true') AS emailconfirmed,
         IF(u.policyagreed=0,'false','true') AS policyagreed,
         IF(u.suspended=0,'false','true') AS suspended, 
         u.idnumber,
@@ -247,6 +309,7 @@ function get_user_vle_enrolments(string $username, string $idnumber)
         ra.userid,
         ra.component,
         r.name AS 'role',
+        r.description AS 'description',
         CASE
             WHEN cx.contextlevel = 10 THEN 'System'
             WHEN cx.contextlevel = 30 THEN 'User'
@@ -362,6 +425,8 @@ function run_sql2(
             }
         }
     } catch (Exception $e) {
+        // echo "<pre>";
         throw new Exception("An error occured: '" . $e->getMessage() . "'");
+        // echo "</pre>";
     }
 }

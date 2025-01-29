@@ -27,6 +27,10 @@ define("HMAIL_DOMAIN", "hogwarts.wiz");
 // Site constants
 define("SCHOOL_HOUSES", ["GRYFFINDOR", "HUFFLEPUFF", "RAVENCLAW", "SLYTHERIN", "HOGWARTS", "NONE"]);
 define("SCHOOL_YEARS", ["FIRST YEAR", "SECOND YEAR", "THIRD YEAR", "FOURTH YEAR", "FIFTH YEAR", "SIXTH YEAR", "SEVENTH YEAR", "STAFF", "NONE"]);
+define('VALID_PREFECT_YEARS', ["FIFTH YEAR", "SIXTH YEAR", "SEVENTH YEAR"]);
+define('VALID_QUIDDITCH_YEARS', ["SECOND YEAR", "THIRD YEAR", "FOURTH YEAR", "FIFTH YEAR", "SIXTH YEAR", "SEVENTH YEAR"]);
+define('VALID_STUDENT_HOUSES', array_diff(SCHOOL_HOUSES, ["HOGWARTS", "NONE"]));
+define('USER_SEX_GENDER', ['UNKNOWN' => 0, 'FEMALE' => 1, 'MALE' => 2]);
 
 // LDAP Constants
 define("LDAP_PROTOCOL", "ldap://");
@@ -36,6 +40,7 @@ define("LDAP_PORT", 389);
 define("LDAP_URI", LDAP_HOST . ":" . LDAP_PORT);
 define("LDAP_BASE_DN", "dc=hogwarts,dc=wiz");
 define("LDAP_DN_SEARCH_BASE", "ou=people," . LDAP_BASE_DN);
+define("LDAP_BASE_GROUP_DN", "ou=groups," . LDAP_BASE_DN);
 define("LDAP_USER_DN", "cn=directory.serviceid,ou=apps," . LDAP_BASE_DN);
 define("LDAP_PW", "laptop");
 
@@ -61,13 +66,18 @@ define('ROLE_STAFF', 'STAFF');
 define('ROLE_STUDENT', 'STUDENT');
 define('ROLE_PARENT', 'PARENT');
 define('ROLE_NONE', 'NONE');
+define('USER_ROLES', [ROLE_PARENT, ROLE_STUDENT, ROLE_STAFF, ROLE_SENIOR_STAFF, ROLE_ADMIN]);
+
+
 
 // Language Constants
 define('LANG_NO_ROLES', 'No Role Defined');
 define('LANG_NO_PERMS', 'No Permissions Defined');
 define('LANG_INSUFFICIENT_PRIVILEGES', "You do not have the required permissions or role to perform that action.");
 define("LANG_BAD_REQUEST", 'Malformed request. Please check that request has the appropriate parameters for this action.');
-
+define("LANG_SQL_UPDATED", "updated");
+define("LANG_SQL_ADDED", "added");
+define("LANG_SQL_DELETED", "deleted");
 
 // Errors
-define("ERROR_LDAP_CONNECTION", "Error connecting to the Hogwarts Authentication Directory Service.");
+define("ERROR_LDAP_CONNECTION", "Unable to connect the Hogwarts Authentication Directory Service. There may be network issues or the service may be unreachable.");

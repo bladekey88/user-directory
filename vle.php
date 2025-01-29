@@ -145,7 +145,6 @@ require_once(FILEROOT . "/header.php");
                                 <tr>
                                     <th scope="col">Username</th>
                                     <th scope="col">Authorisation Source</th>
-                                    <th scope="col">Email Confirmed</th>
                                     <th scope="col">Policy Agreed</th>
                                     <th scope="col">Suspended</th>
                                     <th scope="col">ID</th>
@@ -162,7 +161,6 @@ require_once(FILEROOT . "/header.php");
                                 <tr>
                                     <td><?php echo $vle_info["username"]; ?></td>
                                     <td><?php echo strtoupper($vle_info["auth"]); ?></td>
-                                    <td><?php echo ucfirst($vle_info["emailconfirmed"]); ?></td>
                                     <td><?php echo ucfirst($vle_info["policyagreed"]); ?></td>
 
                                     <?php

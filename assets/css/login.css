@@ -168,6 +168,8 @@ body.night {
         border-top-left-radius: inherit;
         border-bottom-left-radius: inherit;
         font-weight: 500;
+        display: inline-flex;
+        align-items: center;
     }
 }
 
