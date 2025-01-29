@@ -1,14 +1,21 @@
-// if (window.location.href !== window.parent.location.href) {
-//     console.info("modal is running in an iframe");
-// }
+"use strict";
 
-const profileImage = document.getElementById("profileImage");
-const profilePictureMessages = document.getElementById("profilePictureMessages");
-const imgInfo = document.getElementById("img-info");
-const imgInfoSection = document.getElementById("profile-image-info");
-const uploadedImagesContainer = document.getElementById("uploaded-images-container");
-const inputImage = document.getElementById("inputProfilePicture");
+if (window.location.href !== window.parent.location.href) {
+    console.info("modal is running in an iframe");
+}
+
+const profileImage = document.getElementById("profileImage");   // Uploaded Profile Image
+const profilePictureMessages = document.getElementById("profilePictureMessages");   // Div used for messages
+const imgInfo = document.getElementById("img-info");  // Div used to hold the table showing image data
+const imgInfoSection = document.getElementById("profile-image-info");  // The div that holds all the information
+const uploadedImagesContainer = document.getElementById("uploaded-images-container");  // The container for the uploaded image and its preview
+const inputImage = document.getElementById("inputProfilePicture");  // The actual input=file for the image
 const formUpdateProfilePicture = document.getElementById('formUpdateProfilePicture');
+const formUpdateProfilePictureDivs = document.querySelectorAll("form div:not(#profilePictureMessages)");
+
+// Derived from Data Attributes
+const idNumber = formUpdateProfilePicture.dataset.idnumberKey;
+const fetchURI = formUpdateProfilePicture.dataset.fetchUri;
 
 let cropper // define in higer scope
 
@@ -23,9 +30,6 @@ const cropperOptions = {
 };
 
 function importImage() {
-    const formUpdateProfilePictureDivs = document.querySelectorAll(
-        "form div:not(#profilePictureMessages)"
-    );
 
     imgInfoSection.style.display = "none";
     uploadedImagesContainer.style.display = "none";
@@ -40,6 +44,7 @@ function importImage() {
     }
 
     inputImage.addEventListener("change", handleImageSelection);
+
 
     function handleImageSelection(event) {
         const files = event.target.files;
@@ -81,46 +86,46 @@ function importImage() {
         clearErrorMessage();
 
     }
+}
 
-    function returnFileSize(number) {
-        if (number < 1e3) {
-            return `${number} bytes`;
-        } else if (number >= 1e3 && number < 1e6) {
-            return `${(number / 1e3).toFixed(1)} KB`;
-        } else {
-            return `${(number / 1e6).toFixed(1)} MB`;
-        }
+function returnFileSize(number) {
+    if (number < 1e3) {
+        return `${number} bytes`;
+    } else if (number >= 1e3 && number < 1e6) {
+        return `${(number / 1e3).toFixed(1)} KB`;
+    } else {
+        return `${(number / 1e6).toFixed(1)} MB`;
     }
+}
 
-    function isFileImage(file) {
-        return file && file.type.split("/")[0] === "image";
-    }
+function isFileImage(file) {
+    return file && file.type.split("/")[0] === "image";
+}
 
-    function createImageInfoTable(file) {
-        const table = document.createElement("table");
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        headerRow.appendChild(document.createElement("th")).textContent = "Information";
-        headerRow.appendChild(document.createElement("th")).textContent = "Value";
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
+function createImageInfoTable(file) {
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+    headerRow.appendChild(document.createElement("th")).textContent = "Information";
+    headerRow.appendChild(document.createElement("th")).textContent = "Value";
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
 
-        const tbody = document.createElement("tbody");
-        const rows = [
-            ["File Name", file.name],
-            ["File Type", file.type],
-            ["File Size", returnFileSize(file.size)],
-        ];
+    const tbody = document.createElement("tbody");
+    const rows = [
+        ["File Name", file.name],
+        ["File Type", file.type],
+        ["File Size", returnFileSize(file.size)],
+    ];
 
-        rows.forEach(([key, value]) => {
-            const row = tbody.insertRow();
-            row.insertCell(0).innerHTML = key;
-            row.insertCell(1).innerHTML = value;
-        });
+    rows.forEach(([key, value]) => {
+        const row = tbody.insertRow();
+        row.insertCell(0).innerHTML = key;
+        row.insertCell(1).innerHTML = value;
+    });
 
-        table.appendChild(tbody);
-        return table;
-    }
+    table.appendChild(tbody);
+    return table;
 }
 
 function saveToImage() {
@@ -141,14 +146,10 @@ function saveToImage() {
         minHeight: 200
     }).toBlob((blob) => {
         const formData = new FormData();
-        let idnumber = formUpdateProfilePicture.dataset.idnumberKey;
-        console.log(idnumber);
-
         formData.append('profilePicture', blob, 'test.png');
+        formData.append('idnumber', idNumber);
 
-        // formData.append('idnumber', "<?php echo $user["idnumber"]; ?>");
-
-        fetch('<?php echo WEBROOT; ?>/upload-profile-picture.php', {
+        fetch(fetchURI, {
             method: 'POST',
             body: formData
         })
@@ -164,7 +165,7 @@ function saveToImage() {
                     btnGetImage.style.display = "none";
                     btnResetForm.setAttribute("disabled", true);
                     btnResetForm.style.display = "none";
-                    // TODO update original profile image;
+                    document.getElementsByClassName("img-account-profile")[0].src = data.imagePath;
                 } else {
                     console.error(data.error);
                     displayErrorMessage("Profile Picture Update Failed", data.error);
