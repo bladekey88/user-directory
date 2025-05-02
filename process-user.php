@@ -151,6 +151,7 @@ $house = ucwords(strtolower($house));
 $year = ucwords(strtolower($year));
 // Get the values for the role as an id
 $role_id = get_role_details($role_name = $role)["by_name"][0]["role_id"];
+
 // Get quidditch and prefect_ids
 $quidditch_id = $quidditch ? 1 : 0;
 $prefect_id = $prefect  ? 1 : null;

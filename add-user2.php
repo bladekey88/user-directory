@@ -44,21 +44,21 @@ $title =  "Add New User";
                         </legend>
                         <div>
                             <label for="firstname">First Name</label>
-                            <input type="text" class="form-control" id="firstname" name="firstname" required maxlength="20" autocomplete="given-name" placeholder="Thomas">
+                            <input type="text" class="form-control" id="firstname" name="firstname" required maxlength="30" autocomplete="given-name" placeholder="Thomas">
                             <span class="helper-message">First Name is a required field.</span>
                         </div>
                         <div>
                             <label for="lastname">Last Name</label>
-                            <input type="text" class="form-control" id="lastname" name="lastname" required maxlength="20" autocomplete="family-name" placeholder="Smith">
+                            <input type="text" class="form-control" id="lastname" name="lastname" required maxlength="30" autocomplete="family-name" placeholder="Smith">
                             <span class="helper-message">Last Name is a required field.</span>
                         </div>
                         <div>
                             <label for="middlename">Middle Name</label>
-                            <input type="text" class="form-control" id="middlename" name="middlename" minlength="2" maxlength="20" autocomplete="additional-name" placeholder="Enter middle name(s) (if appropriate)">
+                            <input type="text" class="form-control" id="middlename" name="middlename" minlength="2" maxlength="30" autocomplete="additional-name" placeholder="Enter middle name(s) (if appropriate)">
                         </div>
                         <div>
                             <label for="commonname">Common Name (Preferred to be known as)</label>
-                            <input type="text" class="form-control" id="commonname" name="commonname" minlength="2" maxlength="20" autocomplete="nickname" placeholder="Tom">
+                            <input type="text" class="form-control" id="commonname" name="commonname" minlength="2" maxlength="30" autocomplete="nickname" placeholder="Tom">
                             <span class="alert danger helper-message">Common Name field is not valid: It must contain at least two characters.</span>
 
                         </div>

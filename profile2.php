@@ -87,37 +87,37 @@ $editable = check_current_user_can_edit_user($user["userid"]);
 // Get access information
 # As this relies on a multiquery (running through several stored procedure)
 # Scope the php query code here
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PW, "status");
-$mysqli->multi_query("CALL getSystemStatus('$username')");
+// $mysqli = new mysqli(DB_HOST, DB_USER, DB_PW, "status");
+// $mysqli->multi_query("CALL getSystemStatus('$username')");
 
-// Iterate and store in an array so we can check if there are any results
-$access_results = [];
-do {
-    if ($result = $mysqli->store_result()) {
-        $rows = $result->fetch_all(MYSQLI_ASSOC);
-        $access_results[] = $rows;
-        $result->free();
-    }
-} while ($mysqli->next_result());
+// // Iterate and store in an array so we can check if there are any results
+// $access_results = [];
+// do {
+//     if ($result = $mysqli->store_result()) {
+//         $rows = $result->fetch_all(MYSQLI_ASSOC);
+//         $access_results[] = $rows;
+//         $result->free();
+//     }
+// } while ($mysqli->next_result());
 
 $hasResults = false;
-foreach ($access_results as $rowset) {
-    if (count($rowset) > 0) {
-        $hasResults = true;
-        break;
-    }
-}
+// foreach ($access_results as $rowset) {
+//     if (count($rowset) > 0) {
+//         $hasResults = true;
+//         break;
+//     }
+// }
 
-# Also call openfire check status
-# if the user flag exists, it means the account is locked
-$mysqli->multi_query("CALL GetUserStatusOpenfire('$username')");
+// # Also call openfire check status
+// # if the user flag exists, it means the account is locked
+// $mysqli->multi_query("CALL GetUserStatusOpenfire('$username')");
 
-do {
-    if ($chat_result = $mysqli->store_result()) {
-        $chat_rows = $chat_result->fetch_all(MYSQLI_ASSOC);
-    }
-} while ($mysqli->next_result());
-$openfire_status = count($chat_rows) > 0 ? "Disabled" : "Enabled";
+// do {
+//     if ($chat_result = $mysqli->store_result()) {
+//         $chat_rows = $chat_result->fetch_all(MYSQLI_ASSOC);
+//     }
+// } while ($mysqli->next_result());
+// $openfire_status = count($chat_rows) > 0 ? "Disabled" : "Enabled";
 
 // VLE Specific set up
 // Get vle for specified user from get params or get from session
