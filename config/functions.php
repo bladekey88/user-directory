@@ -347,7 +347,7 @@ function sanitise_user_input($input, $type = 'text')
             $input = filter_var($input, FILTER_SANITIZE_URL);
             $input = filter_var($input, FILTER_VALIDATE_URL);
             break;
-            // Add more cases for additional types if needed
+        // Add more cases for additional types if needed
         case 'username':
             $input = preg_replace('/[^a-zA-Z0-9.-]/', '', $input);
             break;
@@ -527,11 +527,10 @@ function create_user(
 ) {
 
 
-    if (!$commonname) $commoname = $firstname;
+    if (!$commonname || strlen($commonname) < 2) $commonname = $firstname;
     $add_profile = run_sql2(insert_new_user($username, $email, $hashed_password, $firstname, $lastname, $middlename, $commonname, $house, $year, $idnumber, $quidditch, $prefect));
     if ($add_profile) {
         $userid = $add_profile;
-
         // Set the user role
         $user_role = run_sql2(update_user_role($userid, $role));
 
