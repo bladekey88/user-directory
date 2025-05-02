@@ -372,11 +372,11 @@ require_once(FILEROOT . "/header.php");
                                                     <label class=" form-label p-0 m-0" for="userRoles">Select New User Role:</label>
                                                     <select name="userRole" id="userRoles" class="rounded-0 border border-secondary border-1 form-control-sm">
                                                         <option value="0" disabled <?php echo ($role == "None") ? 'selected' : ''; ?>>None</option>
-                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?> <option value="5" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option> <?php endif; ?>
-                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?><option value="4" <?php echo ($role == "Senior Staff") ? 'selected' : ''; ?>>Senior Staff</option> <?php endif; ?>
+                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?> <option value="1" <?php echo ($role == "Administrator") ? 'selected' : ''; ?>>Administrator</option> <?php endif; ?>
+                                                        <?php if (check_user_role(ROLE_ADMIN)) : ?><option value="2" <?php echo ($role == "Senior Staff") ? 'selected' : ''; ?>>Senior Staff</option> <?php endif; ?>
                                                         <?php if (check_user_role(ROLE_ADMIN) || check_user_role(ROLE_SENIOR_STAFF)) : ?><option value="3" <?php echo ($role == "Staff") ? 'selected' : ''; ?>>Staff</option><?php endif; ?>
-                                                        <option value="2" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
-                                                        <option value="1" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
+                                                        <option value="4" <?php echo ($role == "Student") ? 'selected' : ''; ?>>Student</option>
+                                                        <option value="5" <?php echo ($role == "Parent") ? 'selected' : ''; ?>>Parent</option>
                                                     </select>
                                                     <button type="submit" class="btn btn-danger rounded-0 btn-sm">Update Role</button>
                                                 </div>

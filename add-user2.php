@@ -321,7 +321,7 @@ $title =  "Add New User";
                         formErrors.className = '';
                         formErrors.className = "alert success";
                         formErrors.insertAdjacentHTML("afterbegin", "<h2>Processing Complete - User Created</h2><hr>")
-                        formErrorList.insertAdjacentHTML("afterbegin", `<span><a href="<?php echo WEBROOT; ?>/profile.php?user=${usernameField.value}">View User</a></span>`);
+                        formErrorList.insertAdjacentHTML("afterbegin", `<span><a href="<?php echo WEBROOT; ?>/profile2.php?user=${usernameField.value}">View User</a></span>`);
                     } else {
                         // Handle server error
                         if (response.status === 400) {

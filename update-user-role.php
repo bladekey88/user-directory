@@ -22,12 +22,12 @@ if (!empty($errors)) {
 }
 
 $roles = [
-    0 => ROLE_NONE,
-    1 => ROLE_PARENT,
-    2 => ROLE_STUDENT,
+    6 => ROLE_NONE,
+    5 => ROLE_PARENT,
+    4 => ROLE_STUDENT,
     3 => ROLE_STAFF,
-    4 => ROLE_SENIOR_STAFF,
-    5 => ROLE_ADMIN
+    2 => ROLE_SENIOR_STAFF,
+    1 => ROLE_ADMIN
 ];
 
 $userid = $_POST["userID"];
