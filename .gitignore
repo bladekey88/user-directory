@@ -14,3 +14,4 @@ img/
 # Ignore test and special files
 test_*
 statute.php
+moodle_login.php

@@ -583,7 +583,7 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                             <span id="user-detail-middlename" data-editable="true">
                                 <?php
                                 if ($user["middlename"] == "") {
-                                    echo "<em>No Middle Name</em>";
+                                    echo null;
                                 } else {
                                     echo $user["middlename"];
                                 } ?>
@@ -605,11 +605,11 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                         </div>
                         <div>
                             <label for="user-detail-username">Username</label>
-                            <span id="user-detail-username" data-editable="false"> <?php echo $user["username"]; ?></span>
+                            <span id="user-detail-username" data-editable="true"> <?php echo $user["username"]; ?></span>
                         </div>
                         <div>
                             <label for="user-detail-email">Email Address</label>
-                            <span id="user-detail-email" data-editable="false"> <?php echo $user["email"]; ?></span>
+                            <span id="user-detail-email" data-editable="true"> <?php echo $user["email"]; ?></span>
                         </div>
                     </div>
                 </div>
@@ -1169,7 +1169,7 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
 
                             <div class="alert secondary alert-subtle-border">
                                 <img class="alert-icon" src="assets/img/icon-info.svg" aria-hidden="true" alt="informatin icon" label="icon indicating this alert message is informational">
-                                <span>Account will be automatically created at login - no request needed</span>
+                                <span>Account will be automatically created at login - no request needed.</span>
                                 <hr>
                                 <a href="/vle/" target="_blank">Click here to go to HogwartsVLE</a>
                             </div>

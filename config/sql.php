@@ -318,6 +318,7 @@ function get_user_vle_enrolments(string $username, string $idnumber)
             ELSE 'Unknown'
         END AS context,
         co.fullname AS 'coursename',
+        co.shortname AS 'shortname',
         cc.name AS 'categoryname',
         ccs.name AS 'course_categoryname',
         cx.instanceid,
@@ -339,7 +340,7 @@ function get_user_vle_enrolments(string $username, string $idnumber)
             context) AS sub
     LEFT JOIN mdl_course AS other_table ON sub.categoryid IS NOT NULL
     AND other_table.category = sub.categoryid
-    order by sub.coursename;";
+    order by sub.shortname;";
     $params = ["username" => $username, "idnumber" => $idnumber];
     return ['operation' => SELECT, 'sql' => $sql, 'params' => $params];
 }

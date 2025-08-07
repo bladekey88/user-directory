@@ -85,20 +85,20 @@ $title =  "Add New User";
                         </div>
                         <div>
                             <label for="email">Email</label>
-                            <input value="debug@hogwarts.wiz" type="email" class="form-control" id="email" name="email" required minlength="3" autocomplete="email" placeholder="t.smith@hogwarts.wiz">
+                            <input type="email" class="form-control" id="email" name="email" required minlength="3" autocomplete="email" placeholder="t.smith@hogwarts.wiz">
                         </div>
                         <div>
                             <label for="password">Password</label>
-                            <input value="debug" type="password" id="password" name="password" class="form-control" required autocomplete="new-password" minlength="6" placeholder="Enter password">
+                            <input type="password" id="password" name="password" class="form-control" required autocomplete="new-password" minlength="6" placeholder="Enter password">
                         </div>
                         <div>
                             <label for="confirm-password">Confirm Password</label>
-                            <input value="debug" type="password" id="confirm-password" name="confirm-password" class="form-control" required autocomplete="new-password" minlength="6" placeholder="Confirm password">
+                            <input type="password" id="confirm-password" name="confirm-password" class="form-control" required autocomplete="new-password" minlength="6" placeholder="Confirm password">
                         </div>
                         <div>
                             <label for="role">Role</label>
                             <select name="role" id="role" aria-label="Selct a system role" required>
-                                <option selected disabled value="">Select a Role</option>
+                                <option selected disabled>Select a Role</option>
                                 <?php
                                 foreach (USER_ROLES as $role) : ?>
                                     <?php
