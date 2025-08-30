@@ -595,7 +595,6 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                                 <span id="user-detail-lastname" data-editable="true"> <?php echo $user["lastname"]; ?></span>
                             <?php else: ?>
                                 <span id="user-detail-lastname" data-editable="false"> <?php echo $user["lastname"]; ?></span>
-
                             <?php endif; ?>
 
                         </div>
@@ -605,11 +604,19 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                         </div>
                         <div>
                             <label for="user-detail-username">Username</label>
-                            <span id="user-detail-username" data-editable="true"> <?php echo $user["username"]; ?></span>
+                            <?php if (check_user_has_any_of_roles([ROLE_ADMIN, ROLE_SENIOR_STAFF])): ?>
+                                <span id="user-detail-username" data-editable="true"> <?php echo $user["username"]; ?></span>
+                            <?php else: ?>
+                                <span id="user-detail-username" data-editable="false"> <?php echo $user["username"]; ?></span>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <label for="user-detail-email">Email Address</label>
-                            <span id="user-detail-email" data-editable="true"> <?php echo $user["email"]; ?></span>
+                            <?php if (check_user_has_any_of_roles([ROLE_ADMIN, ROLE_SENIOR_STAFF])): ?>
+                                <span id="user-detail-email" data-editable="true"> <?php echo $user["email"]; ?></span>
+                            <?php else: ?>
+                                <span id="user-detail-email" data-editable="false"> <?php echo $user["email"]; ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -926,7 +933,7 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                             </div>
                             <hr>
                             <p>You will not be able to login in to any VLE services. Please contact ITServices for further details.</p>
-                            <p><a target="_blank" rel="external noreferrer" href="/vle/">Visit VLE (Opens in a new tab)</a></p>
+                            <p><a target="_blank" rel="external noreferrer noopener" href="/vle/">Visit VLE (Opens in a new tab)</a></p>
                             </h6>
                         </div>
                     <?php endif; ?>
@@ -934,7 +941,7 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                     <?php if ($vle_account) : ?>
                         <?php if (isset($vle_account) &&  $vle_info["suspended"] == "false") :
                             echo "<p>You have access as <mark><strong>$vle_username</strong></mark> to HogwartsVLE. "; ?>
-                            <p><a target="_blank" rel="external noreferrer" href="/vle/">Visit VLE (Opens in a new tab)</a></p>
+                            <p><a target="_blank" rel="external noreferrer noopener" href="/vle/">Visit VLE (Opens in a new tab)</a></p>
                             </p>
                         <?php endif; ?>
                         <section name="vle-info" id="vle-info">
@@ -1300,6 +1307,9 @@ $presented_cert = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS" ? True : False;
                     </span>
                     <p>
                         <em>Note: You are responsible for keeping your certificate information secure, and maintaining its validity.</em>
+                    </p>
+                    <p>
+                        <a href="/identity" target="_blank" rel="noreferrer">Generate a Certificate Signing Request</a>
                     </p>
                 </div>
 
